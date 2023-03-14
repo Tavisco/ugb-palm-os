@@ -1,11 +1,12 @@
 APP	= uGB
 
+TOOLCHAIN	?=	/home/tavisco/palm/palmdev_V3/buildtools/toolchain/bin
 
-M68KCC		= m68k-none-elf-gcc
-M68KLD		= m68k-none-elf-gcc
-M68KOBJCOPY	= m68k-none-elf-objcopy
-M68KSDK		?= /mnt/hgfs/S/My\ Documents/SDK/
-M68KRC		= pilrc
+M68KCC		= $(TOOLCHAIN)/m68k-none-elf-gcc
+M68KLD		= $(TOOLCHAIN)/m68k-none-elf-gcc
+M68KOBJCOPY	= $(TOOLCHAIN)/m68k-none-elf-objcopy
+M68KSDK		?=	/home/tavisco/palm/palmdev_V3/buildtools/palm-os-sdk-master/sdk-5r3/include
+M68KRC		?=	/home/tavisco/palm/palmdev_V3/buildtools/pilrc3_3_unofficial/bin/pilrc
 
 M68KLTO		=	-flto
 M68KCOMMON	=	-Wno-multichar -funsafe-math-optimizations -Os -m68000 -mno-align-int -mpcrel -fpic -fshort-enums -mshort
@@ -32,7 +33,7 @@ M68KINCS	+=	-isystempalm68kgccisms $(PALMOSSDK)
 M68KOBJS	=	palm68k.m68k.o
 
 $(APP).prc:	 $(APP).bin $(APP).68k.bin
-	 pilrc -ro -type appl -creator uGB_ -name uGB palm68kgccisms/gcc.rcp $@
+	 $(M68KRC) -ro -type appl -creator uGB_ -name uGB palm68kgccisms/gcc.rcp $@
 
 %.68k.bin: %.68k.elf
 	$(M68KOBJCOPY) -O binary $< $@ -j.text -j.rodata

@@ -2,7 +2,6 @@
 #include <PalmOS.h>
 #include <VfsMgr.h>
 #include <PceNativeCall.h>
-#include <Hs.h>
 #include "gb.h"
 
 
@@ -159,7 +158,8 @@ Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param, UInt3
 UInt32 PilotMain(UInt16 cmd, void *cmdPBP, UInt16 flags)
 {
 	if (!cmd) {
-		
+		
+
 		UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16, screenPixelW, screenPixelH, screenStride;
 		
 		if (errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
@@ -204,11 +204,11 @@ UInt32 PilotMain(UInt16 cmd, void *cmdPBP, UInt16 flags)
 						pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_A;
 						pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_B;
 						pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
-						pd->keyMapping[__builtin_ctzl(keyBitRockerUp)] = KEY_BIT_UP;
+						pd->keyMapping[__builtin_ctzl(vchrRockerUp)] = KEY_BIT_UP;
 						pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
-						pd->keyMapping[__builtin_ctzl(keyBitRockerDown)] = KEY_BIT_DOWN;
-						pd->keyMapping[__builtin_ctzl(keyBitRockerLeft)] = KEY_BIT_LEFT;
-						pd->keyMapping[__builtin_ctzl(keyBitRockerRight)] = KEY_BIT_RIGHT;
+						pd->keyMapping[__builtin_ctzl(vchrRockerDown)] = KEY_BIT_DOWN;
+						pd->keyMapping[__builtin_ctzl(vchrRockerLeft)] = KEY_BIT_LEFT;
+						pd->keyMapping[__builtin_ctzl(vchrRockerRight)] = KEY_BIT_RIGHT;
 						
 						mask = KeySetMask(0);
 												
