@@ -1,0 +1,14 @@
+*.o
+*.bak
+uGB
+*.bmp
+*.gb
+*.gbc
+*.bin
+*.hex
+all_games_ever
+gb-test-roms-master
+reference
+test
+*.elf
+*.prc
