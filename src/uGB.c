@@ -1,5 +1,6 @@
 #include <PalmOS.h>
-#include <UiResourceIDs.h>
+#include "UiResourceIDs.h"
+#include "uGB.h"
 
 static Boolean AppHandleEvent(EventType * eventP)
 {
@@ -21,7 +22,7 @@ static Boolean AppHandleEvent(EventType * eventP)
 		switch (formId)
 		{
 			case MainForm:
-				//FrmSetEventHandler(frmP, MainFormHandleEvent);
+				FrmSetEventHandler(frmP, RomSelectorFormHandleEvent);
 				break;
 		}
 		return true;
