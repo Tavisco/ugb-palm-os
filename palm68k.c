@@ -155,98 +155,98 @@ Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param, UInt3
 	return true;
 }
 
-UInt32 PilotMain(UInt16 cmd, void *cmdPBP, UInt16 flags)
-{
-	if (!cmd) {
+// UInt32 PilotMain(UInt16 cmd, void *cmdPBP, UInt16 flags)
+// {
+// 	if (!cmd) {
 		
 
-		UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16, screenPixelW, screenPixelH, screenStride;
+// 		UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16, screenPixelW, screenPixelH, screenStride;
 		
-		if (errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
-				errNone == FtrGet(sysFtrCreator, sysFtrNumWinVersion, &winMgrVer) &&
-				sysFtrNumProcessorIsARM(processorType) && winMgrVer >= 4 &&
-				errNone == WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL) &&
-				errNone == WinScreenMode(winScreenModeSet, NULL, NULL, &desiredDepth, NULL)) {
+// 		if (errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
+// 				errNone == FtrGet(sysFtrCreator, sysFtrNumWinVersion, &winMgrVer) &&
+// 				sysFtrNumProcessorIsARM(processorType) && winMgrVer >= 4 &&
+// 				errNone == WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL) &&
+// 				errNone == WinScreenMode(winScreenModeSet, NULL, NULL, &desiredDepth, NULL)) {
 				
-			if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
-					errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
-					errNone == WinScreenGetAttribute(winScreenRowBytes, &screenStride) &&
-					screenPixelW >= 160 && screenPixelH >= 144) {
+// 			if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
+// 					errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
+// 					errNone == WinScreenGetAttribute(winScreenRowBytes, &screenStride) &&
+// 					screenPixelW >= 160 && screenPixelH >= 144) {
 				
-				struct PalmosData *pd;
-				UInt8 mult = 0;
-				MemHandle mh;
+// 				struct PalmosData *pd;
+// 				UInt8 mult = 0;
+// 				MemHandle mh;
 				
-				//find the multiple
-				while (160 * mult <= screenPixelW && 144 * mult <= screenPixelH)
-					mult++;
+// 				//find the multiple
+// 				while (160 * mult <= screenPixelW && 144 * mult <= screenPixelH)
+// 					mult++;
 				
-				pd = MemPtrNew(sizeof(struct PalmosData));
-				if (pd) {
+// 				pd = MemPtrNew(sizeof(struct PalmosData));
+// 				if (pd) {
 					
-					UInt16 vrn;
+// 					UInt16 vrn;
 					
-					if (!gameFind(pd, &vrn))
-						ErrAlertCustom(0, "canot find the game", NULL, NULL);
-					else {
+// 					if (!gameFind(pd, &vrn))
+// 						ErrAlertCustom(0, "canot find the game", NULL, NULL);
+// 					else {
 						
-						UInt32 mask;
+// 						UInt32 mask;
 						
-						pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
-						pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
-						pd->sizeMultiplier = mult - 1;
-						pd->frameDithering = 3;
+// 						pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
+// 						pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
+// 						pd->sizeMultiplier = mult - 1;
+// 						pd->frameDithering = 3;
 						
-						//set up key map
-						MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
-						pd->keyMapping[__builtin_ctzl(keyBitHard1)] = KEY_BIT_START;
-						pd->keyMapping[__builtin_ctzl(keyBitHard2)] = KEY_BIT_SEL;
-						pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_A;
-						pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_B;
-						pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
-						pd->keyMapping[__builtin_ctzl(vchrRockerUp)] = KEY_BIT_UP;
-						pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
-						pd->keyMapping[__builtin_ctzl(vchrRockerDown)] = KEY_BIT_DOWN;
-						pd->keyMapping[__builtin_ctzl(vchrRockerLeft)] = KEY_BIT_LEFT;
-						pd->keyMapping[__builtin_ctzl(vchrRockerRight)] = KEY_BIT_RIGHT;
+// 						//set up key map
+// 						MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
+// 						pd->keyMapping[__builtin_ctzl(keyBitHard1)] = KEY_BIT_START;
+// 						pd->keyMapping[__builtin_ctzl(keyBitHard2)] = KEY_BIT_SEL;
+// 						pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_A;
+// 						pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_B;
+// 						pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
+// 						pd->keyMapping[__builtin_ctzl(vchrRockerUp)] = KEY_BIT_UP;
+// 						pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
+// 						pd->keyMapping[__builtin_ctzl(vchrRockerDown)] = KEY_BIT_DOWN;
+// 						pd->keyMapping[__builtin_ctzl(vchrRockerLeft)] = KEY_BIT_LEFT;
+// 						pd->keyMapping[__builtin_ctzl(vchrRockerRight)] = KEY_BIT_RIGHT;
 						
-						mask = KeySetMask(0);
+// 						mask = KeySetMask(0);
 												
-						if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
-							ErrAlertCustom(0, "Failed to load and relocate the ARM code", NULL, NULL);
+// 						if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
+// 							ErrAlertCustom(0, "Failed to load and relocate the ARM code", NULL, NULL);
 						
-						KeySetMask(mask);
+// 						KeySetMask(mask);
 						
-						MemHandleUnlock(mh);
-						DmReleaseResource(mh);
+// 						MemHandleUnlock(mh);
+// 						DmReleaseResource(mh);
 					
-						if (pd->ramSize && !gameSave(pd, vrn))
-							ErrAlertCustom(0, "Failed to save the game state", NULL, NULL);
+// 						if (pd->ramSize && !gameSave(pd, vrn))
+// 							ErrAlertCustom(0, "Failed to save the game state", NULL, NULL);
 						
-						MemChunkFree(swapPtr(pd->ramBuffer));
-						FtrPtrFree('____', '__');
-					}
+// 						MemChunkFree(swapPtr(pd->ramBuffer));
+// 						FtrPtrFree('____', '__');
+// 					}
 					
-					MemPtrFree(pd);
-				}
-			}
-			(void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
-		}
-	}
-	return 0;
-}
+// 					MemPtrFree(pd);
+// 				}
+// 			}
+// 			(void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
+// 		}
+// 	}
+// 	return 0;
+// }
 
-UInt32 __attribute__((section(".vectors"))) __Startup__(void)
-{
-	SysAppInfoPtr appInfoP;
-	void *prevGlobalsP;
-	void *globalsP;
-	UInt32 ret;
+// UInt32 __attribute__((section(".vectors"))) __Startup__(void)
+// {
+// 	SysAppInfoPtr appInfoP;
+// 	void *prevGlobalsP;
+// 	void *globalsP;
+// 	UInt32 ret;
 	
-	SysAppStartup(&appInfoP, &prevGlobalsP, &globalsP);
-	ret = PilotMain(appInfoP->cmd, appInfoP->cmdPBP, appInfoP->launchFlags);
-	SysAppExit(appInfoP, prevGlobalsP, globalsP);
+// 	SysAppStartup(&appInfoP, &prevGlobalsP, &globalsP);
+// 	ret = PilotMain(appInfoP->cmd, appInfoP->cmdPBP, appInfoP->launchFlags);
+// 	SysAppExit(appInfoP, prevGlobalsP, globalsP);
 	
-	return ret;
-}
+// 	return ret;
+// }
 	

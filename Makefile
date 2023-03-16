@@ -14,6 +14,9 @@ M68KWARN	=	-Wsign-compare -Wextra -Wall -Werror -Wno-unused-parameter -Wno-old-s
 M68KLKR		=	linkerPalm68K.lkr
 M68KCCFLAGS	=	$(M68KLTO) $(M68KWARN) $(M68KCOMMON) -I. -ffunction-sections -fdata-sections
 M68KLDFLAGS	=	$(M68KLTO) $(M68KWARN) $(M68KCOMMON) -Wl,--gc-sections -Wl,-T $(M68KLKR)
+RCP			=	rsc/uGB.rcp
+CREATOR		=	uGB_
+TYPE		=	appl
 
 PALMOSSDK	+=	-isystem$(M68KSDK)
 PALMOSSDK	+=	-isystem$(M68KSDK)/Core
@@ -33,7 +36,7 @@ M68KINCS	+=	-isystempalm68kgccisms $(PALMOSSDK)
 M68KOBJS	=	palm68k.m68k.o
 
 $(APP).prc:	 $(APP).bin $(APP).68k.bin
-	 $(M68KRC) -ro -type appl -creator uGB_ -name uGB palm68kgccisms/gcc.rcp $@
+	$(M68KRC) -ro -o $(APP).prc -creator $(CREATOR) -type $(TYPE) -name $(APP) $(RCP) && rm uGB.68k.bin
 
 %.68k.bin: %.68k.elf
 	$(M68KOBJCOPY) -O binary $< $@ -j.text -j.rodata
@@ -41,7 +44,7 @@ $(APP).prc:	 $(APP).bin $(APP).68k.bin
 $(APP).68k.elf: $(M68KOBJS)
 	$(M68KLD) -o $@ $(M68KLDFLAGS) $^ -lgcc
 
-%.m68k.o: %.c Makefile
+%.m68k.o: uGB.c Makefile
 	$(M68KCC) $(M68KCCFLAGS) $(M68KINCS) -c $< -o $@
 
 clean:
