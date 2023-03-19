@@ -1,7 +1,9 @@
 #ifndef _UI_RES_IDS_
 #define _UI_RES_IDS_
 
-#define RomSelectorForm				1000
-#define RomSelectorList				1020
+#define RomIncompatibleAlert		1000
+
+#define RomSelectorForm				2000
+#define RomSelectorList				2020
 
 #endif

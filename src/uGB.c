@@ -54,20 +54,38 @@ static void AppEventLoop(void)
 	} while (event.eType != appStopEvent);
 }
 
+static Err RomVersionCompatible(UInt16 launchFlags) {
+   UInt32 romVersion;
+   UInt32 requiredVersion = sysMakeROMVersion(5,0,0,sysROMStageRelease,0);
+   UInt32 OS2Version = sysMakeROMVersion(2,0,0,sysROMStageRelease,0);
+
+	// See if we're on the minimum required version of the ROM or later.
+   FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion);
+	if (romVersion < requiredVersion) {
+		if ((launchFlags & (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
+			(sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) {
+			FrmAlert (RomIncompatibleAlert);
+		
+			// Palm OS 1.0 will continuously relaunch this app unless we switch to 
+			// another safe one.
+			if (romVersion < OS2Version)
+				AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
+			
+		}
+		return sysErrRomIncompatible;
+	}
+	return errNone;
+}
 
 UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
 	Err error;
 
 	if (cmd == sysAppLaunchCmdNormalLaunch) {
-		//error = AppStart();
-		//if (error)
-		//	return error;
+		error = RomVersionCompatible(launchFlags);
+		if (error) 
+			return error;
 
-		/*
-		 * start application by opening the main form
-		 * and then entering the main event loop
-		 */
 		FrmGotoForm(RomSelectorForm);
 		AppEventLoop();
 
