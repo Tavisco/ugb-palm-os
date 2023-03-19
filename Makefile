@@ -27,6 +27,7 @@ INCS			+=	-isystem$(SDK)/Core/UI
 INCS			+=	-isystem$(SDK)/Dynamic
 INCS			+=	-isystem$(SDK)/Libraries
 INCS			+=	-isystem$(SDK)/Libraries/PalmOSGlue
+INCS			+=	-isystem$(SDK)/Extensions/ExpansionMgr
 
 $(TARGET).prc: code0001.bin
 	$(PILRC) -ro -o $(TARGET).prc -creator $(CREATOR) -type $(TYPE) -name $(TARGET) -I $(RSC) $(RCP) && rm code0001.bin

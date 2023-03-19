@@ -2,6 +2,22 @@
 #include "UiResourceIDs.h"
 #include "uGB.h"
 
+void * GetObjectPtr(UInt16 objectID)
+{
+	FormType * frmP;
+	UInt16 idx;
+
+	frmP = FrmGetActiveForm();
+	if (!frmP)
+		return NULL;
+
+	idx = FrmGetObjectIndex(frmP, objectID);
+	if (idx == frmInvalidObjectId)
+		return NULL;
+
+	return FrmGetObjectPtr(frmP, idx);
+}
+
 static Boolean AppHandleEvent(EventType * eventP)
 {
 	UInt16 formId;
@@ -56,7 +72,7 @@ static void AppEventLoop(void)
 
 static Err RomVersionCompatible(UInt16 launchFlags) {
    UInt32 romVersion;
-   UInt32 requiredVersion = sysMakeROMVersion(5,0,0,sysROMStageRelease,0);
+   UInt32 requiredVersion = sysMakeROMVersion(3,0,0,sysROMStageRelease,0);
    UInt32 OS2Version = sysMakeROMVersion(2,0,0,sysROMStageRelease,0);
 
 	// See if we're on the minimum required version of the ROM or later.
