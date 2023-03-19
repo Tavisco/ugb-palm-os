@@ -12,3 +12,4 @@ reference
 test
 *.elf
 *.prc
+.vscode/

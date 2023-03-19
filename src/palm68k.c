@@ -235,18 +235,3 @@ Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param, UInt3
 // 	}
 // 	return 0;
 // }
-
-// UInt32 __attribute__((section(".vectors"))) __Startup__(void)
-// {
-// 	SysAppInfoPtr appInfoP;
-// 	void *prevGlobalsP;
-// 	void *globalsP;
-// 	UInt32 ret;
-	
-// 	SysAppStartup(&appInfoP, &prevGlobalsP, &globalsP);
-// 	ret = PilotMain(appInfoP->cmd, appInfoP->cmdPBP, appInfoP->launchFlags);
-// 	SysAppExit(appInfoP, prevGlobalsP, globalsP);
-	
-// 	return ret;
-// }
-	

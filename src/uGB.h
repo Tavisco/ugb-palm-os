@@ -1,7 +1,13 @@
-#ifndef UGB_H_
-#define UGB_H_
+/*
+ * uGB.h
+ *
+ * header file for uGB Palm OS Wrapper
+ * 
+ */
+#ifndef UGB_H
+#define UGB_H
 
 // uGBRomSelector.c
-Boolean RomSelectorFormHandleEvent(EventPtr eventP);
+Boolean RomSelectorFormHandleEvent(EventType * eventP);
 
-#endif
+#endif /* UGB_H */

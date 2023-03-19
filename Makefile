@@ -1,51 +1,46 @@
-APP	= uGB
+TOOLCHAIN		?=	/home/tavisco/palm/palmdev_V3/buildtools/toolchain/bin
+SDK				?=	/home/tavisco/palm/palmdev_V3/buildtools/palm-os-sdk-master/sdk-5r3/include
+PILRC			=	/home/tavisco/palm/palmdev_V3/buildtools/pilrc3_3_unofficial/bin/pilrc
+CC				=	$(TOOLCHAIN)/m68k-none-elf-gcc
+LD				=	$(TOOLCHAIN)/m68k-none-elf-gcc
+OBJCOPY			=	$(TOOLCHAIN)/m68k-none-elf-objcopy
+COMMON			=	-Wmissing-prototypes -Wstrict-prototypes -Wall -Wextra -Werror
+M68KCOMMON		=	$(COMMON) -Wno-multichar -funsafe-math-optimizations -Os -m68000 -mno-align-int -mpcrel -fpic -fshort-enums -mshort -fvisibility=hidden -Wno-attributes
+WARN			=	-Wsign-compare -Wextra -Wall -Wno-unused-parameter -Wno-old-style-declaration -Wno-unused-function -Wno-unused-variable -Wno-error=cpp -Wno-switch  -Wno-implicit-fallthrough
+LKR				=	linkerPalm68K.lkr
+CCFLAGS			=	$(LTO) $(WARN) $(M68KCOMMON) -I. -ffunction-sections -fdata-sections
+LDFLAGS			=	$(LTO) $(WARN) $(M68KCOMMON) -Wl,--gc-sections -Wl,-T $(LKR)
+SRCS			=	src/uGB.c src/uGBRomSelector.c
+RCP				=	rsc/uGB.rcp
+RSC				=	src/
+OBJS			=	$(patsubst %.S,%.o,$(patsubst %.c,%.o,$(SRCS)))
+TARGET			=	uGB
+CREATOR			=	UGB_
+TYPE			=	appl
 
-TOOLCHAIN	?=	/home/tavisco/palm/palmdev_V3/buildtools/toolchain/bin
+#add PalmOS SDK
+INCS			+=	-isystem$(SDK)
+INCS			+=	-isystem$(SDK)/Core
+INCS			+=	-isystem$(SDK)/Core/Hardware
+INCS			+=	-isystem$(SDK)/Core/System
+INCS			+=	-isystem$(SDK)/Core/UI
+INCS			+=	-isystem$(SDK)/Dynamic
+INCS			+=	-isystem$(SDK)/Libraries
+INCS			+=	-isystem$(SDK)/Libraries/PalmOSGlue
 
-M68KCC		= $(TOOLCHAIN)/m68k-none-elf-gcc
-M68KLD		= $(TOOLCHAIN)/m68k-none-elf-gcc
-M68KOBJCOPY	= $(TOOLCHAIN)/m68k-none-elf-objcopy
-M68KSDK		?=	/home/tavisco/palm/palmdev_V3/buildtools/palm-os-sdk-master/sdk-5r3/include
-M68KRC		?=	/home/tavisco/palm/palmdev_V3/buildtools/pilrc3_3_unofficial/bin/pilrc
+$(TARGET).prc: code0001.bin
+	$(PILRC) -ro -o $(TARGET).prc -creator $(CREATOR) -type $(TYPE) -name $(TARGET) -I $(RSC) $(RCP) && rm code0001.bin
 
-M68KLTO		=	-flto
-M68KCOMMON	=	-Wno-multichar -funsafe-math-optimizations -Os -m68000 -mno-align-int -mpcrel -fpic -fshort-enums -mshort
-M68KWARN	=	-Wsign-compare -Wextra -Wall -Werror -Wno-unused-parameter -Wno-old-style-declaration -Wno-unused-function -Wno-unused-variable -Wno-error=cpp
-M68KLKR		=	linkerPalm68K.lkr
-M68KCCFLAGS	=	$(M68KLTO) $(M68KWARN) $(M68KCOMMON) -I. -ffunction-sections -fdata-sections
-M68KLDFLAGS	=	$(M68KLTO) $(M68KWARN) $(M68KCOMMON) -Wl,--gc-sections -Wl,-T $(M68KLKR)
+%.bin: %.elf
+	$(OBJCOPY) -O binary $< $@ -j.vec -j.text -j.rodata
 
-PALMOSSDK	+=	-isystem$(M68KSDK)
-PALMOSSDK	+=	-isystem$(M68KSDK)/Core
-PALMOSSDK	+=	-isystem$(M68KSDK)/Core/Hardware
-PALMOSSDK	+=	-isystem$(M68KSDK)/Core/System
-PALMOSSDK	+=	-isystem$(M68KSDK)/Core/UI
-PALMOSSDK	+=	-isystem$(M68KSDK)/Dynamic
-PALMOSSDK	+=	-isystem$(M68KSDK)/Extensions
-PALMOSSDK	+=	-isystem$(M68KSDK)/Extensions/ExpansionMgr
-PALMOSSDK	+=	-isystem$(M68KSDK)/Libraries
-PALMOSSDK	+=	-isystem$(M68KSDK)/PalmSDK/Incs
-PALMOSSDK	+=	-isystem$(M68KSDK)/PalmSDK/Incs/68k
-PALMOSSDK	+=	-isystem$(M68KSDK)/PalmSDK/Incs/Common
-PALMOSSDK	+=	-isystem$(M68KSDK)/PalmSDK/Incs/Common/system
-M68KINCS	+=	-isystempalm68kgccisms $(PALMOSSDK)
+%.elf: $(OBJS)
+	$(LD) -o $@ $(LDFLAGS) $^
 
-M68KOBJS	=	palm68k.m68k.o
-
-SRCS		=	src/uGB.c src/uGBRomSelector.c src/uGB.h 
-
-$(APP).prc:	 $(APP).bin $(APP).68k.bin
-	 $(M68KRC) -ro -o $(APP).prc -type appl -creator uGB_ -name uGB rsc/uGB.rcp $@
-
-%.68k.bin: %.68k.elf
-	$(M68KOBJCOPY) -O binary $< $@ -j.text -j.rodata
-
-$(APP).68k.elf: $(M68KOBJS)
-	$(M68KLD) -o $@ $(M68KLDFLAGS) $^ -lgcc
-
-%.m68k.o: $(SRCS) Makefile
-	$(M68KCC) $(M68KCCFLAGS) $(M68KINCS) -c $< -o $@
+%.o : %.c Makefile
+	$(CC) $(CCFLAGS)  $(INCS) -c $< -o $@
 
 clean:
-	rm -f $(M68KOBJS) $(APP).68k.elf $(APP).68k.bin $(APP).prc
-
+	rm -rf $(OBJS) $(NAME).elf $(TARGET).prc
+ 
+.PHONY: clean

@@ -21,7 +21,7 @@ static Boolean AppHandleEvent(EventType * eventP)
 		 */
 		switch (formId)
 		{
-			case MainForm:
+			case RomSelectorForm:
 				FrmSetEventHandler(frmP, RomSelectorFormHandleEvent);
 				break;
 		}
@@ -68,7 +68,7 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 		 * start application by opening the main form
 		 * and then entering the main event loop
 		 */
-		FrmGotoForm(MainForm);
+		FrmGotoForm(RomSelectorForm);
 		AppEventLoop();
 
 		//AppStop();
@@ -77,7 +77,8 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 	return errNone;
 }
 
-UInt32 __attribute__((section(".vectors"))) __Startup__(void)
+UInt32 __attribute__((section(".vectors"), used)) __Startup__(void);
+UInt32 __attribute__((section(".vectors"), used)) __Startup__(void)
 {
 	SysAppInfoPtr appInfoP;
 	void *prevGlobalsP;

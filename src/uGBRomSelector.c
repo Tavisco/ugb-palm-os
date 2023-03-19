@@ -1,7 +1,7 @@
 #include <PalmOS.h>
 #include "uGB.h"
 
-Boolean RomSelectorFormHandleEvent(EventPtr eventP)
+Boolean RomSelectorFormHandleEvent(EventType * eventP)
 {
 	Boolean handled = false;
 	FormType *frmP;
@@ -14,7 +14,7 @@ Boolean RomSelectorFormHandleEvent(EventPtr eventP)
 	case frmOpenEvent:
 		frmP = FrmGetActiveForm();
 		FrmDrawForm(frmP);
-		MainFormInit(frmP);
+		//MainFormInit(frmP);
 		handled = true;
 		break;
 
@@ -30,6 +30,8 @@ Boolean RomSelectorFormHandleEvent(EventPtr eventP)
 	{
 		// return MainFormDoCommand(eventP->data.menu.itemID);
 	}
+	default:
+			break;
 	}
 
 	return handled;

@@ -1,4 +1,4 @@
-DATA "code" ID 1 "uGB.68k.bin"
+DATA "code" ID 1 "code0001.bin"
 DATA "ARMC" ID 0 "uGB.bin"
 
 HEX "data" ID 0 
