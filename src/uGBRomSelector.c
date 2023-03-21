@@ -1,5 +1,5 @@
 #include <PalmOS.h>
-#include <VfsMgr.h>
+#include <VFSMgr.h>
 #include "uGB.h"
 #include "UiResourceIDs.h"
 
@@ -12,12 +12,7 @@ static void RomSelectorInit(FormType *frmP)
 
 	romCount = 0;
 
-	romFileName = (Char **)MemPtrNew(MAX_ROMS * sizeof(Char *));
-	for (i=0; i < MAX_ROMS; i++)
-	{
-		romFileName[i] = (Char *)MemPtrNew(40 * sizeof(Char));
-		MemSet(romFileName[i], 40, 0);
-	}
+	romFileName = *globalsSlotPtr(GLOBALS_SLOT_ROMS_LIST);
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) 
 	{

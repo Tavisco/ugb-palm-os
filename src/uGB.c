@@ -93,6 +93,21 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 	return errNone;
 }
 
+static void InitGlobals(void)
+{
+	Char **romFileName;
+	UInt16 i;
+
+	romFileName = (Char **)MemPtrNew(MAX_ROMS * sizeof(Char *));
+	for (i=0; i < MAX_ROMS; i++)
+	{
+		romFileName[i] = (Char *)MemPtrNew(40 * sizeof(Char));
+		MemSet(romFileName[i], 40, 0);
+	}
+
+	*globalsSlotPtr(GLOBALS_SLOT_ROMS_LIST) = romFileName;
+}
+
 UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
 	Err error;
@@ -102,6 +117,7 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 		if (error) 
 			return error;
 
+		InitGlobals();
 		FrmGotoForm(RomSelectorForm);
 		AppEventLoop();
 
