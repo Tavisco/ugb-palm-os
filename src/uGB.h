@@ -32,6 +32,7 @@
 	}
 
 	#define GLOBALS_SLOT_ROMS_LIST		1
+	#define GLOBALS_SLOT_VOL_ITER		2
 
 #endif
 

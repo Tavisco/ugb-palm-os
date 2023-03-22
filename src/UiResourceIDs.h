@@ -5,5 +5,6 @@
 
 #define RomSelectorForm				2000
 #define RomSelectorList				2020
+#define RomSelectorLaunchButton		2002
 
 #endif
