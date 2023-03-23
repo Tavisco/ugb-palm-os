@@ -93,7 +93,7 @@ static Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param
 
 static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelection)
 {
-	UInt32 volIter;
+	UInt32 volIter = vfsIteratorStart;
 	FileRef fGame, fSave;
 	Boolean ret = false;
 	UInt16 vrn;
@@ -105,23 +105,19 @@ static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelect
 		romFileName = (Char **)globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 
 		Char *fileName = MemPtrNew(59); // should check for err
-		StrCat(fileName, "/PALM/Programs/uGB/");
+		MemSet(fileName, 59, 0);
+
+		StrCat(fileName, "/Palm/Programs/uGB/");
 		StrCat(fileName, romFileName[lstSelection]);
+
 
 		while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
 
-		// if (errNone != VFSVolumeEnumerate(&vrn, volIter))
-		// {
-		// 	SysFatalAlert("Failed to enumerate");
-		// }
-
 			e = VFSFileOpen(vrn, fileName, vfsModeRead, &fGame);
 			if (e == errNone) { // This is probably where it's failing...
-				
 				UInt32 fSize, pos, now, chunkSz = 32768;
 				
 				if (errNone == VFSFileSize(fGame, &fSize)) {
-					
 					Boolean haveSave = false;
 					void *rom, *ram;
 					
@@ -162,6 +158,8 @@ static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelect
 						*cardVrnP = vrn;
 					
 					ret = true;
+				} else {
+					ErrAlertCustom(0, "VFSFileSize failed", NULL, NULL);
 				}
 				VFSFileClose(fGame);
 			} else {
@@ -192,7 +190,7 @@ static void RomSelectorInit(FormType *frmP)
 		Char *fileName = MemPtrNew(40); // should check for err 
 		
 		// open the directory first, to get the directory reference 
-		err = VFSFileOpen(vrn, "/PALM/Programs/uGB", vfsModeRead, &dirRef); 
+		err = VFSFileOpen(vrn, "/Palm/Programs/uGB", vfsModeRead, &dirRef); 
 		if(err == errNone) { 
 			info.nameP = fileName; // point to local buffer 
 			info.nameBufLen = 40; 
@@ -309,6 +307,8 @@ static void LaunchRom(void)
 				}
 			}
 			(void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
+		} else {
+			ErrAlertCustom(0, "Invalid processor and/or screen.", NULL, NULL);
 		}
 }
 

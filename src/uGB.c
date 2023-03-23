@@ -21,7 +21,7 @@ void * GetObjectPtr(UInt16 objectID)
 static Boolean AppHandleEvent(EventType * eventP)
 {
 	UInt16 formId;
-	FormType * frmP;
+	FormType *frmP;
 
 	if (eventP->eType == frmLoadEvent)
 	{
@@ -115,7 +115,7 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 	if (cmd == sysAppLaunchCmdNormalLaunch) {
 		error = RomVersionCompatible(launchFlags);
 		if (error) 
-			return error;
+			return error; 
 
 		InitGlobals();
 		FrmGotoForm(RomSelectorForm);
@@ -134,7 +134,7 @@ UInt32 __attribute__((section(".vectors"), used)) __Startup__(void)
 	void *prevGlobalsP;
 	void *globalsP;
 	UInt32 ret;
-	
+
 	SysAppStartup(&appInfoP, &prevGlobalsP, &globalsP);
 	ret = PilotMain(appInfoP->cmd, appInfoP->cmdPBP, appInfoP->launchFlags);
 	SysAppExit(appInfoP, prevGlobalsP, globalsP);
