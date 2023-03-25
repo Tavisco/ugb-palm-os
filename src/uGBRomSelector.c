@@ -59,7 +59,6 @@ static Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param
 	gotEnd = (uint32_t*)(ram - swap32(hdr->__data_start) + swap32(hdr->__got_end));
 	
 	while (gotStart < gotEnd) {
-		
 		uint32_t word = swap32(*gotStart);
 		
 		if (word >= textMin && word < textMax)
@@ -91,7 +90,7 @@ static Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param
 	return true;
 }
 
-static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelection)
+static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelection)
 {
 	FileRef fGame, fSave;
 	UInt32 ptrInt;
@@ -108,16 +107,15 @@ static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelect
 	StrCat(fileName, romFileNameList[lstSelection]);
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
-
 		e = VFSFileOpen(vrn, fileName, vfsModeRead, &fGame);
-		if (e == errNone) { // This is probably where it's failing...
+		if (e == errNone) {
 			UInt32 fSize, pos, now, chunkSz = 32768;
 			
 			if (errNone == VFSFileSize(fGame, &fSize)) {
 				Boolean haveSave = false;
 				void *rom, *ram;
 				
-				e = FtrPtrNew('____', '__', fSize, &rom);
+				e = FtrPtrNew(APP_CREATOR, FTR_ROM_MEMORY, fSize, &rom);
 				if (e != errNone)
 					SysFatalAlert("Cannot alloc rom");
 				
@@ -155,11 +153,9 @@ static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelect
 				
 				ret = true;
 			} else {
-				ErrAlertCustom(0, "VFSFileSize failed", NULL, NULL);
+				SysFatalAlert("VFSFileSize failed");
 			}
 			VFSFileClose(fGame);
-		} else {
-			SysFatalAlert("Failed to load file from VFS");
 		}
 	}
 	
@@ -184,7 +180,7 @@ static void RomSelectorInit(FormType *frmP)
 		Char *fileName = MemPtrNew(MAX_FILENAME_LENGTH); // should check for err 
 		
 		// open the directory first, to get the directory reference 
-		err = VFSFileOpen(vrn, "/Palm/Programs/uGB", vfsModeRead, &dirRef); 
+		err = VFSFileOpen(vrn, UGB_BASE_PATH, vfsModeRead, &dirRef); 
 		if(err == errNone) { 
 			info.nameP = fileName; // point to local buffer 
 			info.nameBufLen = MAX_FILENAME_LENGTH; 
@@ -222,7 +218,8 @@ static void LaunchRom(void)
 
 		if (noListSelection == lstSelection)
 		{
-			SysFatalAlert("Must select rom!");
+			FrmAlert (MustSelectRomAlert);
+			return;
 		}
 		
 		if (errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
@@ -251,10 +248,11 @@ static void LaunchRom(void)
 					
 					UInt16 vrn;
 					
-					if (!gameFind(pd, &vrn, lstSelection))
-						ErrAlertCustom(0, "canot find the game", NULL, NULL);
+					if (!loadROMIntoMemory(pd, &vrn, lstSelection))
+						SysFatalAlert("Cannot load selected game into memory!");
 					else {
-						
+						WinDrawChars("Press power to stop emulation", 29, 1, 150);
+
 						UInt32 mask;
 						
 						pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
@@ -269,27 +267,27 @@ static void LaunchRom(void)
 						pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_A;
 						pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_B;
 						pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
-						pd->keyMapping[__builtin_ctzl(vchrRockerUp)] = KEY_BIT_UP;
+						//pd->keyMapping[__builtin_ctzl(keyBitRockerUp)] = KEY_BIT_UP;
 						pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
-						pd->keyMapping[__builtin_ctzl(vchrRockerDown)] = KEY_BIT_DOWN;
-						pd->keyMapping[__builtin_ctzl(vchrRockerLeft)] = KEY_BIT_LEFT;
-						pd->keyMapping[__builtin_ctzl(vchrRockerRight)] = KEY_BIT_RIGHT;
+						// pd->keyMapping[__builtin_ctzl(keyBitRockerDown)] = KEY_BIT_DOWN;
+						// pd->keyMapping[__builtin_ctzl(keyBitRockerLeft)] = KEY_BIT_LEFT;
+						// pd->keyMapping[__builtin_ctzl(keyBitRockerRight)] = KEY_BIT_RIGHT;
 
 						mask = KeySetMask(0);
 
 						if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
-							ErrAlertCustom(0, "Failed to load and relocate the ARM code", NULL, NULL);
-						
+							SysFatalAlert("Failed to load and relocate the ARM code");
+							
 						KeySetMask(mask);
 						
 						MemHandleUnlock(mh);
 						DmReleaseResource(mh);
 					
 						if (pd->ramSize && !gameSave(pd, vrn))
-							ErrAlertCustom(0, "Failed to save the game state", NULL, NULL);
+							FrmAlert(FailedToSaveAlert);
 						
 						MemChunkFree(swapPtr(pd->ramBuffer));
-						FtrPtrFree('____', '__');
+						FtrPtrFree(APP_CREATOR, FTR_ROM_MEMORY);
 					}
 					
 					MemPtrFree(pd);
@@ -328,29 +326,20 @@ Boolean RomSelectorFormHandleEvent(EventType * eventP)
 
 	switch (eventP->eType)
 	{
-	// case menuEvent:
-	// 	return MainFormDoCommand(eventP->data.menu.itemID);
+		// case menuEvent:
+		// 	return MainFormDoCommand(eventP->data.menu.itemID);
 
-	case frmOpenEvent:
-		FrmDrawForm(fp);
-		RomSelectorInit(fp);
-		handled = true;
-		break;
-
-	case frmUpdateEvent:
-		/*
-		 * To do any custom drawing here, first call
-		 * FrmDrawForm(), then do your drawing, and
-		 * then set handled to true.
-		 */
-		break;
-
-	case ctlSelectEvent:
-	{
-		return RomSelectorDoCommand(eventP->data.menu.itemID);
-	}
-	default:
+		case frmOpenEvent:
+			FrmDrawForm(fp);
+			RomSelectorInit(fp);
+			handled = true;
 			break;
+
+		case ctlSelectEvent:
+			return RomSelectorDoCommand(eventP->data.menu.itemID);
+		
+		default:
+				break;
 	}
 
 	return handled;

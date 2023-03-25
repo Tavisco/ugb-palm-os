@@ -80,7 +80,7 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 	if (romVersion < requiredVersion) {
 		if ((launchFlags & (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
 			(sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) {
-			FrmAlert (RomIncompatibleAlert);
+			FrmAlert (PalmOSIncompatibleAlert);
 		
 			// Palm OS 1.0 will continuously relaunch this app unless we switch to 
 			// another safe one.

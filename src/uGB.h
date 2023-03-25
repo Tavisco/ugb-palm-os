@@ -11,8 +11,9 @@
 #define MAX_FILENAME_LENGTH			256	// the maximum filename length allowed
 #define BASEPATH_LENGTH				20
 #define GLOBALS_SLOT_ROMS_LIST		1
-#define APP_FILE_CREATOR			'UGB_'
+#define APP_CREATOR					'UGB_'
 #define UGB_BASE_PATH				"/Palm/Programs/uGB/"
+#define FTR_ROM_MEMORY				(UInt16)0
 
 
 #ifndef __ARM__

@@ -35,8 +35,24 @@ VERSION ID 1 "1.0"
 ALERT ID 1000
 ERROR
 BEGIN
-     TITLE "ROM Incompatible"
+     TITLE "Unsupported Palm OS version"
      MESSAGE "System Version 5.0 or greater is required to run this application."
+     BUTTONS "OK" 
+END
+
+ALERT ID 1001
+ERROR
+BEGIN
+     TITLE "Select a game first!"
+     MESSAGE "You must select a ROM before launching it."
+     BUTTONS "OK" 
+END
+
+ALERT ID 1002
+ERROR
+BEGIN
+     TITLE "Error"
+     MESSAGE "Failed to save game. Check your SD card."
      BUTTONS "OK" 
 END
 
