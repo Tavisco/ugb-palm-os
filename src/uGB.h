@@ -19,6 +19,13 @@
 #define UGB_SAVE_EXTENSION			".sav"
 #define FTR_ROM_MEMORY				(UInt16)0
 
+// From PalmSource
+#define keyBitRockerUp				0x00010000	// 5-way rocker
+#define keyBitRockerDown			0x00020000
+#define keyBitRockerLeft			0x00040000
+#define keyBitRockerRight			0x00080000
+#define keyBitRockerCenter			0x00100000
+
 
 #ifndef __ARM__
 
@@ -46,6 +53,7 @@
 
 	#define GLOBALS_SLOT_ROMS_LIST			1
 	#define GLOBALS_SLOT_ROM_SAVENAME		2
+	#define GLOBALS_SLOT_VRN				3
 
 #endif
 
