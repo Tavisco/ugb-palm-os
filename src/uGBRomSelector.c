@@ -93,136 +93,137 @@ static Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param
 
 static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelection)
 {
-	// UInt32 volIter = vfsIteratorStart;
-	// FileRef fGame, fSave;
-	// Boolean ret = false;
-	// UInt16 vrn;
-	// Err e;
-	// Char **romFileName;
+	FileRef fGame, fSave;
+	SharedVariables *sharedVars;
+	UInt32 ptrInt;
+	UInt16 vrn;
+	Err e;
+	UInt32 volIter = vfsIteratorStart;
+	Boolean ret = false;
 	
-	
-	// 	//volIter = (UInt32 *)globalsSlotVal(GLOBALS_SLOT_VOL_ITER);
-	// 	romFileName = (Char **)globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 
-	// 	Char *fileName = MemPtrNew(59); // should check for err
-	// 	MemSet(fileName, 59, 0);
+	FtrGet(appFileCreator, ftrShrVarsNum, &ptrInt);
+	sharedVars = (SharedVariables *)ptrInt;
 
-	// 	StrCat(fileName, "/Palm/Programs/uGB/");
-	// 	StrCat(fileName, romFileName[lstSelection]);
+	Char *fileName = MemPtrNew(59); // should check for err
+	MemSet(fileName, 59, 0);
+
+	StrCat(fileName, "/Palm/Programs/uGB/");
+	StrCat(fileName, sharedVars->romFileName[lstSelection]);
 
 
-	// 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
+	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
 
-	// 		e = VFSFileOpen(vrn, fileName, vfsModeRead, &fGame);
-	// 		if (e == errNone) { // This is probably where it's failing...
-	// 			UInt32 fSize, pos, now, chunkSz = 32768;
+		e = VFSFileOpen(vrn, fileName, vfsModeRead, &fGame);
+		if (e == errNone) { // This is probably where it's failing...
+			UInt32 fSize, pos, now, chunkSz = 32768;
+			
+			if (errNone == VFSFileSize(fGame, &fSize)) {
+				Boolean haveSave = false;
+				void *rom, *ram;
 				
-	// 			if (errNone == VFSFileSize(fGame, &fSize)) {
-	// 				Boolean haveSave = false;
-	// 				void *rom, *ram;
+				e = FtrPtrNew('____', '__', fSize, &rom);
+				if (e != errNone)
+					SysFatalAlert("Cannot alloc rom");
+				
+				for (pos = 0; pos < fSize; pos += now) {
 					
-	// 				e = FtrPtrNew('____', '__', fSize, &rom);
-	// 				if (e != errNone)
-	// 					SysFatalAlert("Cannot alloc rom");
+					now = fSize - pos;
+					if (now > chunkSz)
+						now = chunkSz;
 					
-	// 				for (pos = 0; pos < fSize; pos += now) {
-						
-	// 					now = fSize - pos;
-	// 					if (now > chunkSz)
-	// 						now = chunkSz;
-						
-	// 					e = VFSFileReadData(fGame, now, rom, pos, &now);
-	// 					if (e != errNone && e != vfsErrFileEOF)
-	// 						SysFatalAlert("read error");
-	// 				}
-					
-	// 				pd->rom = swapPtr(rom);
-	// 				pd->romSz = swap32(fSize);
-	// 				pd->ramBuffer = swapPtr(ram = MemChunkNew(0, RAM_SIZE, 0x1200));
-	// 				pd->ramSize = swap32(RAM_SIZE);
-	// 				if (!pd->ramBuffer)
-	// 					SysFatalAlert("Failed to alloc ram");
-					
-	// 				if (errNone == VFSFileOpen(vrn, "/game.sav", vfsModeRead, &fSave)) {
-	// 					if (errNone == VFSFileSize(fSave, &fSize) && fSize < RAM_SIZE) {
-	// 						e = VFSFileRead(fSave, fSize, ram, &now);
-	// 						haveSave = (e == errNone || e == vfsErrFileEOF) && now == fSize;
-	// 					}
-	// 					VFSFileClose(fSave);
-	// 				}
-					
-	// 				if (!haveSave)
-	// 					MemSet(ram, RAM_SIZE, 0xff);
-					
-	// 				if (cardVrnP)
-	// 					*cardVrnP = vrn;
-					
-	// 				ret = true;
-	// 			} else {
-	// 				ErrAlertCustom(0, "VFSFileSize failed", NULL, NULL);
-	// 			}
-	// 			VFSFileClose(fGame);
-	// 		} else {
-	// 			SysFatalAlert("Failed to load file from VFS");
-	// 		}
-	// 	}
+					e = VFSFileReadData(fGame, now, rom, pos, &now);
+					if (e != errNone && e != vfsErrFileEOF)
+						SysFatalAlert("read error");
+				}
+				
+				pd->rom = swapPtr(rom);
+				pd->romSz = swap32(fSize);
+				pd->ramBuffer = swapPtr(ram = MemChunkNew(0, RAM_SIZE, 0x1200));
+				pd->ramSize = swap32(RAM_SIZE);
+				if (!pd->ramBuffer)
+					SysFatalAlert("Failed to alloc ram");
+				
+				if (errNone == VFSFileOpen(vrn, "/game.sav", vfsModeRead, &fSave)) {
+					if (errNone == VFSFileSize(fSave, &fSize) && fSize < RAM_SIZE) {
+						e = VFSFileRead(fSave, fSize, ram, &now);
+						haveSave = (e == errNone || e == vfsErrFileEOF) && now == fSize;
+					}
+					VFSFileClose(fSave);
+				}
+				
+				if (!haveSave)
+					MemSet(ram, RAM_SIZE, 0xff);
+				
+				if (cardVrnP)
+					*cardVrnP = vrn;
+				
+				ret = true;
+			} else {
+				ErrAlertCustom(0, "VFSFileSize failed", NULL, NULL);
+			}
+			VFSFileClose(fGame);
+		} else {
+			SysFatalAlert("Failed to load file from VFS");
+		}
+	}
 	
-	// return ret;
-	return false;
+	return ret;
 }
 
 static void RomSelectorInit(FormType *frmP)
 {
-	// UInt16 vrn, romCount, i;
-	// Char **romFileName;
-	// UInt32 volIter = vfsIteratorStart;
-	// Boolean actualVolIterSet = false;
-	// Err err = errNone;
+	UInt16 vrn, romCount, i;
+	SharedVariables *sharedVars;
+	UInt32 ptrInt;
+	UInt32 volIter = vfsIteratorStart;
+	Err err = errNone;
 
-	// romCount = 0;
+	romCount = 0;
 
-	// //romFileName = *globalsSlotPtr(GLOBALS_SLOT_ROMS_LIST);
+	FtrGet(appFileCreator, ftrShrVarsNum, &ptrInt);
+	sharedVars = (SharedVariables *)ptrInt;
 
-	// while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) 
-	// {
-	// 	FileInfoType info; 
-	// 	FileRef dirRef; 
-	// 	UInt32 dirIterator; 
-	// 	Char *fileName = MemPtrNew(40); // should check for err 
+	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) 
+	{
+		FileInfoType info; 
+		FileRef dirRef; 
+		UInt32 dirIterator; 
+		Char *fileName = MemPtrNew(40); // should check for err 
 		
-	// 	// open the directory first, to get the directory reference 
-	// 	err = VFSFileOpen(vrn, "/Palm/Programs/uGB", vfsModeRead, &dirRef); 
-	// 	if(err == errNone) { 
-	// 		info.nameP = fileName; // point to local buffer 
-	// 		info.nameBufLen = 40; 
-	// 		dirIterator = vfsIteratorStart;
-	// 		while (dirIterator != vfsIteratorStop) { 
-	// 			// Get the next file 
-	// 			err = VFSDirEntryEnumerate (dirRef, &dirIterator, &info); 
-	// 			if (err == errNone && info.attributes != vfsFileAttrDirectory) {
-	// 				StrCopy(romFileName[romCount], fileName);
-	// 				romCount++;
-	// 				if (!actualVolIterSet)
-	// 				{
-	// 					*globalsSlotPtr(GLOBALS_SLOT_VOL_ITER) = &volIter;
-	// 					actualVolIterSet = true;
-	// 				}
-	// 			} else { 
-	// 				// handle error, possibly by breaking out of the loop 
-	// 			}
-	// 		}
-	// 		VFSFileClose(dirRef);
-	// 	} else { 
-	// 		// handle directory open error here 
-	// 	}
-	// 	MemPtrFree(fileName); 
-	// }
+		// open the directory first, to get the directory reference 
+		err = VFSFileOpen(vrn, "/Palm/Programs/uGB", vfsModeRead, &dirRef); 
+		if(err == errNone) { 
+			info.nameP = fileName; // point to local buffer 
+			info.nameBufLen = 40; 
+			dirIterator = vfsIteratorStart;
+			while (dirIterator != vfsIteratorStop) { 
+				// Get the next file 
+				err = VFSDirEntryEnumerate (dirRef, &dirIterator, &info); 
+				if (err == errNone && info.attributes != vfsFileAttrDirectory) {
+					StrCopy(sharedVars->romFileName[romCount], fileName);
+					romCount++;
+					//if (!actualVolIterSet)
+					//{
+						//*globalsSlotPtr(GLOBALS_SLOT_VOL_ITER) = &volIter;
+					//	actualVolIterSet = true;
+					//}
+				} else { 
+					// handle error, possibly by breaking out of the loop 
+				}
+			}
+			VFSFileClose(dirRef);
+		} else { 
+			// handle directory open error here 
+		}
+		MemPtrFree(fileName); 
+	}
 
-	// ListType *list = GetObjectPtr(RomSelectorList);
+	ListType *list = GetObjectPtr(RomSelectorList);
 
-	// LstSetListChoices(list, romFileName, romCount);
-	// LstSetSelection(list, -1);
-	// LstDrawList(list);
+	LstSetListChoices(list, sharedVars->romFileName, romCount);
+	LstSetSelection(list, -1);
+	LstDrawList(list);
 }
 
 static void LaunchRom(void)
@@ -345,7 +346,7 @@ Boolean RomSelectorFormHandleEvent(EventType * eventP)
 
 	case frmOpenEvent:
 		FrmDrawForm(fp);
-		//RomSelectorInit(frmP);
+		RomSelectorInit(fp);
 		handled = true;
 		break;
 

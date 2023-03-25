@@ -72,7 +72,7 @@ static void AppEventLoop(void)
 
 static Err RomVersionCompatible(UInt16 launchFlags) {
    UInt32 romVersion;
-   UInt32 requiredVersion = sysMakeROMVersion(3,0,0,sysROMStageRelease,0);
+   UInt32 requiredVersion = sysMakeROMVersion(5,0,0,sysROMStageRelease,0);
    UInt32 OS2Version = sysMakeROMVersion(2,0,0,sysROMStageRelease,0);
 
 	// See if we're on the minimum required version of the ROM or later.
