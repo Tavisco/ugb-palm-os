@@ -319,18 +319,37 @@ static void LaunchRom(void)
 		}
 }
 
-static Boolean RomSelectorDoCommand(UInt16 command)
+void OpenAboutDialog(void)
+{
+	FormType * frmP;
+
+	/* Clear the menu status from the display */
+	MenuEraseStatus(0);
+
+	/* Display the About Box. */
+	frmP = FrmInitForm (AboutForm);
+	FrmDoDialog (frmP);
+	FrmDeleteForm (frmP);
+}
+
+Boolean RomSelectorDoCommand(UInt16 command)
 {
 	Boolean handled = false;
 
 	switch (command)
 	{
 	case RomSelectorLaunchButton:
-	{
-		LaunchRom();
-		handled = true;
-		break;
-	}
+		{
+			LaunchRom();
+			handled = true;
+			break;
+		}
+	case RomSelectorMenuItemAbout:
+		{
+			OpenAboutDialog();
+			handled = true;
+			break;
+		}
 
 	default:
 		break;
@@ -338,7 +357,6 @@ static Boolean RomSelectorDoCommand(UInt16 command)
 
 	return handled;
 }
-
 
 Boolean RomSelectorFormHandleEvent(EventType * eventP)
 {
@@ -354,6 +372,9 @@ Boolean RomSelectorFormHandleEvent(EventType * eventP)
 			InitForm();
 			handled = true;
 			break;
+
+		case menuEvent:
+			return RomSelectorDoCommand(eventP->data.menu.itemID);
 
 		case ctlSelectEvent:
 			return RomSelectorDoCommand(eventP->data.menu.itemID);

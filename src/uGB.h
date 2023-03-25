@@ -61,5 +61,7 @@ void *GetObjectPtr(UInt16 objectID);
 
 // uGBRomSelector.c
 Boolean RomSelectorFormHandleEvent(EventType * eventP);
+Boolean RomSelectorDoCommand(UInt16 command);
+void OpenAboutDialog(void);
 
 #endif /* UGB_H */
