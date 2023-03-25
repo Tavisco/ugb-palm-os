@@ -95,17 +95,58 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 
 static void InitGlobals(void)
 {
-	Char **romFileName;
+    UInt16 i;
+	SharedVariables *sharedVars;
+
+	sharedVars = (SharedVariables *)MemPtrNew(sizeof(SharedVariables));
+	if (sharedVars == NULL) {
+        SysFatalAlert("Not enough memory to make shared vars!");
+    }
+    
+    // Allocate memory for the array of rom file names
+    sharedVars->romFileName = (Char **)MemPtrNew(MAX_ROMS * sizeof(Char *));
+    if (sharedVars->romFileName == NULL) {
+        SysFatalAlert("Not enough heap!");
+    }
+    
+    // Allocate memory for each rom file name
+    for (i = 0; i < MAX_ROMS; i++) {
+        sharedVars->romFileName[i] = (Char *)MemPtrNew(40 * sizeof(Char));
+        if (sharedVars->romFileName[i] == NULL) {
+            // Free all previously allocated memory and return an error code
+            for (UInt16 j = 0; j < i; j++) {
+                MemPtrFree(sharedVars->romFileName[j]);
+            }
+            MemPtrFree(sharedVars->romFileName);
+            SysFatalAlert("Failed to allocate memory!");
+        }
+        MemSet(sharedVars->romFileName[i], 40, 0);
+    }
+
+	if (errNone != FtrSet(appFileCreator, ftrShrVarsNum, (UInt32)sharedVars))
+	{
+		SysFatalAlert("Failed to set sharedVars!");
+	}
+}
+
+static void AppStop(void)
+{
+	SharedVariables *sharedVars;
+	UInt32 ptrInt;
 	UInt16 i;
 
-	romFileName = (Char **)MemPtrNew(MAX_ROMS * sizeof(Char *));
+	FtrGet(appFileCreator, ftrShrVarsNum, &ptrInt);
+	sharedVars = (SharedVariables *)ptrInt;
+
 	for (i=0; i < MAX_ROMS; i++)
 	{
-		romFileName[i] = (Char *)MemPtrNew(40 * sizeof(Char));
-		MemSet(romFileName[i], 40, 0);
+		MemPtrFree(sharedVars->romFileName[i]);
 	}
 
-	*globalsSlotPtr(GLOBALS_SLOT_ROMS_LIST) = romFileName;
+	MemPtrFree(sharedVars->romFileName);
+	MemPtrFree(sharedVars);
+	FtrUnregister(appFileCreator, ftrShrVarsNum);
+	FrmCloseAllForms();
 }
 
 UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
@@ -121,7 +162,7 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 		FrmGotoForm(RomSelectorForm);
 		AppEventLoop();
 
-		//AppStop();
+		AppStop();
 	}
 
 	return errNone;
