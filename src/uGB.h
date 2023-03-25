@@ -10,9 +10,13 @@
 #define MAX_ROMS					64	// the maximum number of roms to exist
 #define MAX_FILENAME_LENGTH			256	// the maximum filename length allowed
 #define BASEPATH_LENGTH				20
+#define SAVE_DIR_NAME_LENGTH		7
+#define SAVE_EXTE_NAME_LENGTH		7
 #define GLOBALS_SLOT_ROMS_LIST		1
 #define APP_CREATOR					'UGB_'
 #define UGB_BASE_PATH				"/Palm/Programs/uGB/"
+#define UGB_SAVE_DIR				"saves/"
+#define UGB_SAVE_EXTENSION			".sav"
 #define FTR_ROM_MEMORY				(UInt16)0
 
 
@@ -40,7 +44,8 @@
 		return a5[slotID];
 	}
 
-	#define GLOBALS_SLOT_ROMS_LIST		1
+	#define GLOBALS_SLOT_ROMS_LIST			1
+	#define GLOBALS_SLOT_ROM_SAVENAME		2
 
 #endif
 

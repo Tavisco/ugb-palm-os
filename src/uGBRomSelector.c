@@ -25,13 +25,17 @@ static Err gameSave(struct PalmosData *pd, UInt16 vrn)
 	FileRef fSave;
 	Boolean ret;
 	Err e;
+	Char *saveFileName;
+
+	saveFileName = globalsSlotVal(GLOBALS_SLOT_ROM_SAVENAME);
+	if (!saveFileName)
+		SysFatalAlert("Failed to determine save file name!");
 	
-	e = VFSFileOpen(vrn, "/game.sav", vfsModeWrite | vfsModeCreate | vfsModeTruncate, &fSave);
+	e = VFSFileOpen(vrn, saveFileName, vfsModeWrite | vfsModeCreate | vfsModeTruncate, &fSave);
 	if (e != errNone)
 		return false;
 
 	ret = errNone == VFSFileWrite(fSave, saveSize, ram, &now) && now == saveSize;
-	
 	ret = errNone == VFSFileClose(fSave) && ret;
 	
 	return ret;
@@ -100,11 +104,20 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP, Int16 
 	Boolean ret = false;
 	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 	Char *fileName = MemPtrNew(BASEPATH_LENGTH+MAX_FILENAME_LENGTH);
+	Char *saveFileName = MemPtrNew(BASEPATH_LENGTH+SAVE_DIR_NAME_LENGTH+MAX_FILENAME_LENGTH+SAVE_EXTE_NAME_LENGTH);
 
 	MemSet(fileName, BASEPATH_LENGTH+MAX_FILENAME_LENGTH, 0);
+	MemSet(saveFileName, BASEPATH_LENGTH+SAVE_DIR_NAME_LENGTH+MAX_FILENAME_LENGTH+SAVE_EXTE_NAME_LENGTH, 0);
 
-	StrCat(fileName, UGB_BASE_PATH);
+	StrCopy(fileName, UGB_BASE_PATH);
 	StrCat(fileName, romFileNameList[lstSelection]);
+
+	StrCopy(saveFileName, UGB_BASE_PATH);
+	StrCat(saveFileName, UGB_SAVE_DIR);
+	StrCat(saveFileName, romFileNameList[lstSelection]);
+	StrCat(saveFileName, UGB_SAVE_EXTENSION);
+
+	*globalsSlotPtr(GLOBALS_SLOT_ROM_SAVENAME) = saveFileName;
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
 		e = VFSFileOpen(vrn, fileName, vfsModeRead, &fGame);
@@ -120,7 +133,6 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP, Int16 
 					SysFatalAlert("Cannot alloc rom");
 				
 				for (pos = 0; pos < fSize; pos += now) {
-					
 					now = fSize - pos;
 					if (now > chunkSz)
 						now = chunkSz;
@@ -137,7 +149,7 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP, Int16 
 				if (!pd->ramBuffer)
 					SysFatalAlert("Failed to alloc ram");
 				
-				if (errNone == VFSFileOpen(vrn, "/game.sav", vfsModeRead, &fSave)) {
+				if (errNone == VFSFileOpen(vrn, saveFileName, vfsModeRead, &fSave)) {
 					if (errNone == VFSFileSize(fSave, &fSize) && fSize < RAM_SIZE) {
 						e = VFSFileRead(fSave, fSize, ram, &now);
 						haveSave = (e == errNone || e == vfsErrFileEOF) && now == fSize;
@@ -209,6 +221,13 @@ static void RomSelectorInit(FormType *frmP)
 	LstDrawList(list);
 }
 
+static void InitForm(void)
+{
+	FormPtr fp = FrmGetActiveForm();
+	FrmDrawForm(fp);
+	RomSelectorInit(fp);
+}
+
 static void LaunchRom(void)
 {
 		UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16, screenPixelW, screenPixelH, screenStride;
@@ -251,8 +270,6 @@ static void LaunchRom(void)
 					if (!loadROMIntoMemory(pd, &vrn, lstSelection))
 						SysFatalAlert("Cannot load selected game into memory!");
 					else {
-						WinDrawChars("Press power to stop emulation", 29, 1, 150);
-
 						UInt32 mask;
 						
 						pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
@@ -275,6 +292,8 @@ static void LaunchRom(void)
 
 						mask = KeySetMask(0);
 
+						WinDrawChars("Press power to stop emulation", 29, 1, 150);
+
 						if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
 							SysFatalAlert("Failed to load and relocate the ARM code");
 							
@@ -294,6 +313,7 @@ static void LaunchRom(void)
 				}
 			}
 			(void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
+			InitForm();
 		} else {
 			ErrAlertCustom(0, "Invalid processor and/or screen.", NULL, NULL);
 		}
@@ -319,10 +339,11 @@ static Boolean RomSelectorDoCommand(UInt16 command)
 	return handled;
 }
 
+
 Boolean RomSelectorFormHandleEvent(EventType * eventP)
 {
 	Boolean handled = false;
-	FormPtr fp = FrmGetActiveForm();
+	
 
 	switch (eventP->eType)
 	{
@@ -330,8 +351,7 @@ Boolean RomSelectorFormHandleEvent(EventType * eventP)
 		// 	return MainFormDoCommand(eventP->data.menu.itemID);
 
 		case frmOpenEvent:
-			FrmDrawForm(fp);
-			RomSelectorInit(fp);
+			InitForm();
 			handled = true;
 			break;
 

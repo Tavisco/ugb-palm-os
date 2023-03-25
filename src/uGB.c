@@ -124,14 +124,22 @@ static void InitGlobals(void)
 static void AppStop(void)
 {
 	UInt16 i;
-	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
+	Char **romFileNameList;
+	Char *saveFileName;
 
+	// Cleanup ROMs file list
+	romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 	for (i=0; i < MAX_ROMS; i++)
 	{
 		MemPtrFree(romFileNameList[i]);
 	}
-
 	MemPtrFree(romFileNameList);
+
+	// Cleanup save file name
+	saveFileName = globalsSlotVal(GLOBALS_SLOT_ROM_SAVENAME);
+	if (saveFileName)
+		MemPtrFree(saveFileName);
+
 	FrmCloseAllForms();
 }
 
