@@ -100,17 +100,15 @@ static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelect
 	Err e;
 	UInt32 volIter = vfsIteratorStart;
 	Boolean ret = false;
-	
 
-	FtrGet(appFileCreator, ftrShrVarsNum, &ptrInt);
+	FtrGet(APP_FILE_CREATOR, ftrShrVarsNum, &ptrInt);
 	sharedVars = (SharedVariables *)ptrInt;
 
-	Char *fileName = MemPtrNew(59); // should check for err
-	MemSet(fileName, 59, 0);
+	Char *fileName = MemPtrNew(BASEPATH_LENGTH+MAX_FILENAME_LENGTH); // should check for err
+	MemSet(fileName, BASEPATH_LENGTH+MAX_FILENAME_LENGTH, 0);
 
-	StrCat(fileName, "/Palm/Programs/uGB/");
+	StrCat(fileName, UGB_BASE_PATH);
 	StrCat(fileName, sharedVars->romFileName[lstSelection]);
-
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
 
@@ -181,7 +179,7 @@ static void RomSelectorInit(FormType *frmP)
 
 	romCount = 0;
 
-	FtrGet(appFileCreator, ftrShrVarsNum, &ptrInt);
+	FtrGet(APP_FILE_CREATOR, ftrShrVarsNum, &ptrInt);
 	sharedVars = (SharedVariables *)ptrInt;
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) 
@@ -189,13 +187,13 @@ static void RomSelectorInit(FormType *frmP)
 		FileInfoType info; 
 		FileRef dirRef; 
 		UInt32 dirIterator; 
-		Char *fileName = MemPtrNew(40); // should check for err 
+		Char *fileName = MemPtrNew(MAX_FILENAME_LENGTH); // should check for err 
 		
 		// open the directory first, to get the directory reference 
 		err = VFSFileOpen(vrn, "/Palm/Programs/uGB", vfsModeRead, &dirRef); 
 		if(err == errNone) { 
 			info.nameP = fileName; // point to local buffer 
-			info.nameBufLen = 40; 
+			info.nameBufLen = MAX_FILENAME_LENGTH; 
 			dirIterator = vfsIteratorStart;
 			while (dirIterator != vfsIteratorStop) { 
 				// Get the next file 
@@ -203,11 +201,6 @@ static void RomSelectorInit(FormType *frmP)
 				if (err == errNone && info.attributes != vfsFileAttrDirectory) {
 					StrCopy(sharedVars->romFileName[romCount], fileName);
 					romCount++;
-					//if (!actualVolIterSet)
-					//{
-						//*globalsSlotPtr(GLOBALS_SLOT_VOL_ITER) = &volIter;
-					//	actualVolIterSet = true;
-					//}
 				} else { 
 					// handle error, possibly by breaking out of the loop 
 				}

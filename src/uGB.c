@@ -111,7 +111,7 @@ static void InitGlobals(void)
     
     // Allocate memory for each rom file name
     for (i = 0; i < MAX_ROMS; i++) {
-        sharedVars->romFileName[i] = (Char *)MemPtrNew(40 * sizeof(Char));
+        sharedVars->romFileName[i] = (Char *)MemPtrNew(MAX_FILENAME_LENGTH * sizeof(Char));
         if (sharedVars->romFileName[i] == NULL) {
             // Free all previously allocated memory and return an error code
             for (UInt16 j = 0; j < i; j++) {
@@ -120,10 +120,10 @@ static void InitGlobals(void)
             MemPtrFree(sharedVars->romFileName);
             SysFatalAlert("Failed to allocate memory!");
         }
-        MemSet(sharedVars->romFileName[i], 40, 0);
+        MemSet(sharedVars->romFileName[i], MAX_FILENAME_LENGTH, 0);
     }
 
-	if (errNone != FtrSet(appFileCreator, ftrShrVarsNum, (UInt32)sharedVars))
+	if (errNone != FtrSet(APP_FILE_CREATOR, ftrShrVarsNum, (UInt32)sharedVars))
 	{
 		SysFatalAlert("Failed to set sharedVars!");
 	}
@@ -135,7 +135,7 @@ static void AppStop(void)
 	UInt32 ptrInt;
 	UInt16 i;
 
-	FtrGet(appFileCreator, ftrShrVarsNum, &ptrInt);
+	FtrGet(APP_FILE_CREATOR, ftrShrVarsNum, &ptrInt);
 	sharedVars = (SharedVariables *)ptrInt;
 
 	for (i=0; i < MAX_ROMS; i++)
@@ -145,7 +145,7 @@ static void AppStop(void)
 
 	MemPtrFree(sharedVars->romFileName);
 	MemPtrFree(sharedVars);
-	FtrUnregister(appFileCreator, ftrShrVarsNum);
+	FtrUnregister(APP_FILE_CREATOR, ftrShrVarsNum);
 	FrmCloseAllForms();
 }
 
