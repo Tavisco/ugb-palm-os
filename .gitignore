@@ -13,3 +13,4 @@ test
 *.elf
 *.prc
 .vscode/
+!uGB.bin
