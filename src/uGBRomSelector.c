@@ -281,14 +281,14 @@ static void LaunchRom(void)
 						MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
 						pd->keyMapping[__builtin_ctzl(keyBitHard1)] = KEY_BIT_START;
 						pd->keyMapping[__builtin_ctzl(keyBitHard2)] = KEY_BIT_SEL;
-						pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_A;
-						pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_B;
+						pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_A;
+						pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_B;
 						pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
-						//pd->keyMapping[__builtin_ctzl(keyBitRockerUp)] = KEY_BIT_UP;
+						pd->keyMapping[__builtin_ctzl(keyBitRockerUp)] = KEY_BIT_UP;
 						pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
-						// pd->keyMapping[__builtin_ctzl(keyBitRockerDown)] = KEY_BIT_DOWN;
-						// pd->keyMapping[__builtin_ctzl(keyBitRockerLeft)] = KEY_BIT_LEFT;
-						// pd->keyMapping[__builtin_ctzl(keyBitRockerRight)] = KEY_BIT_RIGHT;
+						pd->keyMapping[__builtin_ctzl(keyBitRockerDown)] = KEY_BIT_DOWN;
+						pd->keyMapping[__builtin_ctzl(keyBitRockerLeft)] = KEY_BIT_LEFT;
+						pd->keyMapping[__builtin_ctzl(keyBitRockerRight)] = KEY_BIT_RIGHT;
 
 						mask = KeySetMask(0);
 

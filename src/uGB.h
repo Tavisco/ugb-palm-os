@@ -53,8 +53,6 @@
 
 	#define GLOBALS_SLOT_ROMS_LIST			1
 	#define GLOBALS_SLOT_ROM_SAVENAME		2
-	#define GLOBALS_SLOT_VRN				3
-
 #endif
 
 
