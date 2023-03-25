@@ -12,14 +12,36 @@
 #define BASEPATH_LENGTH				20
 #define GLOBALS_SLOT_ROMS_LIST		1
 #define APP_FILE_CREATOR			'UGB_'
-#define ftrShrVarsNum				(UInt16)0
 #define UGB_BASE_PATH				"/Palm/Programs/uGB/"
 
 
-typedef struct SharedVariables
-{
-	Char **romFileName;
-} SharedVariables;
+#ifndef __ARM__
+
+	//globals (8 slots maximum, each stores a void*, zero-inited at app start)
+
+	#define NUM_GLOBALS_SLOTS		8
+
+	register void** a5 asm("a5");
+
+	static inline void** globalsSlotPtr(UInt8 slotID)	//[0] is reserved
+	{
+		if (!slotID || slotID > NUM_GLOBALS_SLOTS)
+			return NULL;
+
+		return a5 + slotID;
+	}
+
+	static inline void* globalsSlotVal(UInt8 slotID)	//[0] is reserved
+	{
+		if (!slotID || slotID > NUM_GLOBALS_SLOTS)
+			return NULL;
+
+		return a5[slotID];
+	}
+
+	#define GLOBALS_SLOT_ROMS_LIST		1
+
+#endif
 
 
 // uGB.c

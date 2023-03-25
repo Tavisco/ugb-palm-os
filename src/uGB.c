@@ -72,7 +72,7 @@ static void AppEventLoop(void)
 
 static Err RomVersionCompatible(UInt16 launchFlags) {
    UInt32 romVersion;
-   UInt32 requiredVersion = sysMakeROMVersion(5,0,0,sysROMStageRelease,0);
+   UInt32 requiredVersion = sysMakeROMVersion(3,0,0,sysROMStageRelease,0);
    UInt32 OS2Version = sysMakeROMVersion(2,0,0,sysROMStageRelease,0);
 
 	// See if we're on the minimum required version of the ROM or later.
@@ -95,57 +95,43 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 
 static void InitGlobals(void)
 {
-    UInt16 i;
-	SharedVariables *sharedVars;
+	Char **romFileNameList;
+	UInt16 i;
 
-	sharedVars = (SharedVariables *)MemPtrNew(sizeof(SharedVariables));
-	if (sharedVars == NULL) {
-        SysFatalAlert("Not enough memory to make shared vars!");
-    }
-    
     // Allocate memory for the array of rom file names
-    sharedVars->romFileName = (Char **)MemPtrNew(MAX_ROMS * sizeof(Char *));
-    if (sharedVars->romFileName == NULL) {
+    romFileNameList = (Char **)MemPtrNew(MAX_ROMS * sizeof(Char *));
+    if (romFileNameList == NULL) {
         SysFatalAlert("Not enough heap!");
     }
     
     // Allocate memory for each rom file name
     for (i = 0; i < MAX_ROMS; i++) {
-        sharedVars->romFileName[i] = (Char *)MemPtrNew(MAX_FILENAME_LENGTH * sizeof(Char));
-        if (sharedVars->romFileName[i] == NULL) {
+        romFileNameList[i] = (Char *)MemPtrNew(MAX_FILENAME_LENGTH * sizeof(Char));
+        if (romFileNameList[i] == NULL) {
             // Free all previously allocated memory and return an error code
             for (UInt16 j = 0; j < i; j++) {
-                MemPtrFree(sharedVars->romFileName[j]);
+                MemPtrFree(romFileNameList[j]);
             }
-            MemPtrFree(sharedVars->romFileName);
+            MemPtrFree(romFileNameList);
             SysFatalAlert("Failed to allocate memory!");
         }
-        MemSet(sharedVars->romFileName[i], MAX_FILENAME_LENGTH, 0);
+        MemSet(romFileNameList[i], MAX_FILENAME_LENGTH, 0);
     }
 
-	if (errNone != FtrSet(APP_FILE_CREATOR, ftrShrVarsNum, (UInt32)sharedVars))
-	{
-		SysFatalAlert("Failed to set sharedVars!");
-	}
+	*globalsSlotPtr(GLOBALS_SLOT_ROMS_LIST) = romFileNameList;
 }
 
 static void AppStop(void)
 {
-	SharedVariables *sharedVars;
-	UInt32 ptrInt;
 	UInt16 i;
-
-	FtrGet(APP_FILE_CREATOR, ftrShrVarsNum, &ptrInt);
-	sharedVars = (SharedVariables *)ptrInt;
+	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 
 	for (i=0; i < MAX_ROMS; i++)
 	{
-		MemPtrFree(sharedVars->romFileName[i]);
+		MemPtrFree(romFileNameList[i]);
 	}
 
-	MemPtrFree(sharedVars->romFileName);
-	MemPtrFree(sharedVars);
-	FtrUnregister(APP_FILE_CREATOR, ftrShrVarsNum);
+	MemPtrFree(romFileNameList);
 	FrmCloseAllForms();
 }
 

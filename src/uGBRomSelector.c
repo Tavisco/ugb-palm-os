@@ -94,21 +94,18 @@ static Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param
 static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelection)
 {
 	FileRef fGame, fSave;
-	SharedVariables *sharedVars;
 	UInt32 ptrInt;
 	UInt16 vrn;
 	Err e;
 	UInt32 volIter = vfsIteratorStart;
 	Boolean ret = false;
+	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
+	Char *fileName = MemPtrNew(BASEPATH_LENGTH+MAX_FILENAME_LENGTH);
 
-	FtrGet(APP_FILE_CREATOR, ftrShrVarsNum, &ptrInt);
-	sharedVars = (SharedVariables *)ptrInt;
-
-	Char *fileName = MemPtrNew(BASEPATH_LENGTH+MAX_FILENAME_LENGTH); // should check for err
 	MemSet(fileName, BASEPATH_LENGTH+MAX_FILENAME_LENGTH, 0);
 
 	StrCat(fileName, UGB_BASE_PATH);
-	StrCat(fileName, sharedVars->romFileName[lstSelection]);
+	StrCat(fileName, romFileNameList[lstSelection]);
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
 
@@ -172,15 +169,12 @@ static Boolean gameFind(struct PalmosData *pd, UInt16 *cardVrnP, Int16 lstSelect
 static void RomSelectorInit(FormType *frmP)
 {
 	UInt16 vrn, romCount, i;
-	SharedVariables *sharedVars;
 	UInt32 ptrInt;
 	UInt32 volIter = vfsIteratorStart;
 	Err err = errNone;
+	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 
 	romCount = 0;
-
-	FtrGet(APP_FILE_CREATOR, ftrShrVarsNum, &ptrInt);
-	sharedVars = (SharedVariables *)ptrInt;
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) 
 	{
@@ -199,7 +193,7 @@ static void RomSelectorInit(FormType *frmP)
 				// Get the next file 
 				err = VFSDirEntryEnumerate (dirRef, &dirIterator, &info); 
 				if (err == errNone && info.attributes != vfsFileAttrDirectory) {
-					StrCopy(sharedVars->romFileName[romCount], fileName);
+					StrCopy(romFileNameList[romCount], fileName);
 					romCount++;
 				} else { 
 					// handle error, possibly by breaking out of the loop 
@@ -214,7 +208,7 @@ static void RomSelectorInit(FormType *frmP)
 
 	ListType *list = GetObjectPtr(RomSelectorList);
 
-	LstSetListChoices(list, sharedVars->romFileName, romCount);
+	LstSetListChoices(list, romFileNameList, romCount);
 	LstSetSelection(list, -1);
 	LstDrawList(list);
 }
