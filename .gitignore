@@ -1,7 +1,6 @@
 *.o
 *.bak
 uGB
-*.bmp
 *.gb
 *.gbc
 *.bin

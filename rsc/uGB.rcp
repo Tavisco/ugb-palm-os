@@ -30,7 +30,20 @@ HEX "code" ID 0
 	/* bytes below a5 */
 	0x00 0x00 0x00 0x00
 
-VERSION ID 1 "1.0"
+VERSION ID 1 "1.1"
+
+ICONFAMILYEX ID 1000
+BEGIN
+	BITMAP "rsc/icon-lg-8.bmp" BPP 8 TRANSPARENTINDEX 210 COMPRESS
+	BITMAP "rsc/icon-lg-8-d108.bmp" BPP 8 TRANSPARENTINDEX 210 COMPRESS DENSITY 108
+	BITMAP "rsc/icon-lg-8-d144.bmp" BPP 8 TRANSPARENTINDEX 210 COMPRESS DENSITY 144
+END
+
+/*SMALLICONFAMILYEX
+BEGIN
+    BITMAP "rsc/icon-sm-1.bmp"  BPP 1
+    BITMAP "rsc/icon-sm-8.bmp"  BPP 8 TRANSPARENTINDEX 210 COMPRESS
+END*/
 
 ALERT ID 1000
 ERROR
@@ -75,14 +88,15 @@ BEGIN
  LIST ID 2020 AT (1 35 158 122) VISIBLEITEMS 11
 END
 
-FORM ID 3000 AT (2 38 156 120)
+FORM ID 3000 AT (2 18 156 140)
     FRAME
     MODAL
     DEFAULTBTNID 3001
 BEGIN
 	TITLE "About uGB"
-	LABEL "Version 1.0" ID 3002 AT (5 15) FONT 1
-	LABEL "uGB Core by DmitryGR\rWrapper by Tavisco\rMade in 2023" ID 3003  AT (5 27)
-	LABEL "More at:\r- https://dmitry.gr\r- https://palm.tavisco.dev" ID 3004  AT (5 65)
-	BUTTON "OK" ID 3001 AT (CENTER 104 40 12)
+	LABEL "Version 1.1" ID 3002 AT (5 15) FONT 1
+	LABEL "uGB Core by DmitryGR\rApp by Tavisco\rIcon by Pinchies" ID 3003  AT (5 27)
+	LABEL "Made in 2023" ID 3005  AT (5 67)
+	LABEL "More at:\r- https://dmitry.gr\r- https://palm.tavisco.dev" ID 3004  AT (5 85)
+	BUTTON "OK" ID 3001 AT (CENTER 124 40 12)
 END
