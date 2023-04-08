@@ -94,14 +94,18 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 }
 
 static Err DeviceCompatible(void) {
-	UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16;
+	UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16,  screenPixelW, screenPixelH;
 
-	if (errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
-	errNone == FtrGet(sysFtrCreator, sysFtrNumWinVersion, &winMgrVer) &&
-	sysFtrNumProcessorIsARM(processorType) &&
-	winMgrVer >= 4 &&
-	errNone == WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL) &&
-	errNone == WinScreenMode(winScreenModeSet, NULL, NULL, &desiredDepth, NULL)
+	if (
+		errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
+		sysFtrNumProcessorIsARM(processorType) &&
+		errNone == FtrGet(sysFtrCreator, sysFtrNumWinVersion, &winMgrVer) &&
+		winMgrVer >= 4 &&
+		errNone == WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL) &&
+		errNone == WinScreenMode(winScreenModeSet, NULL, NULL, &desiredDepth, NULL) &&
+		errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
+		errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
+		screenPixelW >= 160 && screenPixelH >= 144
 	)
 	{
 		return errNone;
@@ -154,7 +158,7 @@ static void AppStop(void)
 	MemPtrFree(romFileNameList);
 
 	// Cleanup save file name
-	saveFileName = globalsSlotVal(GLOBALS_SLOT_ROM_SAVENAME);
+	saveFileName = globalsSlotVal(GLOBALS_SLOT_PATH_ROM_FILE);
 	if (saveFileName)
 		MemPtrFree(saveFileName);
 

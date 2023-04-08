@@ -26,6 +26,8 @@
 #define keyBitRockerRight			0x00080000
 #define keyBitRockerCenter			0x00100000
 
+#define RAM_SIZE		(128UL << 10)
+
 
 #ifndef __ARM__
 
@@ -52,7 +54,7 @@
 	}
 
 	#define GLOBALS_SLOT_ROMS_LIST			1
-	#define GLOBALS_SLOT_ROM_SAVENAME		2
+	#define GLOBALS_SLOT_PATH_ROM_FILE		2
 #endif
 
 
@@ -60,10 +62,14 @@
 void *GetObjectPtr(UInt16 objectID);
 
 // uGBRomSelector.c
-Boolean RomSelectorFormHandleEvent(EventType * eventP);
+Boolean RomSelectorFormHandleEvent(EventType *eventP);
 Boolean RomSelectorDoCommand(UInt16 command);
 void OpenAboutDialog(void);
 UInt32 getExtraKeysCallback (void);
 void perFrameCallback (void);
+
+// uGBPlayer.c
+Boolean PlayerDoCommand(UInt16 command);
+Boolean PlayerFormHandleEvent(EventType *eventP);
 
 #endif /* UGB_H */
