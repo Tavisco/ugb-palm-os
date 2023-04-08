@@ -69,6 +69,22 @@ BEGIN
      BUTTONS "OK" 
 END
 
+ALERT ID 1003
+ERROR
+BEGIN
+     TITLE "Device is incompatible"
+     MESSAGE "Your device does not meet the minimum requisites to run: It must have a 16bit depth screen (aka. color), have winMgrVer >= 4 and have an ARM processor."
+     BUTTONS "OK" 
+END
+
+ALERT ID 1004
+ERROR
+BEGIN
+     TITLE "Resolution too low"
+     MESSAGE "Your device must have the resolution of at least 160x144 pixels for uGB to run"
+     BUTTONS "OK" 
+END
+
 MENU ID 1000
 BEGIN
 	PULLDOWN "Options"

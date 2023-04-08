@@ -80,7 +80,7 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 	if (romVersion < requiredVersion) {
 		if ((launchFlags & (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
 			(sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) {
-			FrmAlert (PalmOSIncompatibleAlert);
+			FrmAlert(PalmOSIncompatibleAlert);
 		
 			// Palm OS 1.0 will continuously relaunch this app unless we switch to 
 			// another safe one.
@@ -91,6 +91,24 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 		return sysErrRomIncompatible;
 	}
 	return errNone;
+}
+
+static Err DeviceCompatible(void) {
+	UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16;
+
+	if (errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
+	errNone == FtrGet(sysFtrCreator, sysFtrNumWinVersion, &winMgrVer) &&
+	sysFtrNumProcessorIsARM(processorType) &&
+	winMgrVer >= 4 &&
+	errNone == WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL) &&
+	errNone == WinScreenMode(winScreenModeSet, NULL, NULL, &desiredDepth, NULL)
+	)
+	{
+		return errNone;
+	}
+
+	FrmAlert(DeviceIncompatibleAlert);
+	return sysErrRomIncompatible;
 }
 
 static void InitGlobals(void)
@@ -113,7 +131,7 @@ static void InitGlobals(void)
                 MemPtrFree(romFileNameList[j]);
             }
             MemPtrFree(romFileNameList);
-            SysFatalAlert("Failed to allocate memory!");
+            SysFatalAlert("Failed to allocate global memory!");
         }
         MemSet(romFileNameList[i], MAX_FILENAME_LENGTH, 0);
     }
@@ -150,7 +168,11 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 	if (cmd == sysAppLaunchCmdNormalLaunch) {
 		error = RomVersionCompatible(launchFlags);
 		if (error) 
-			return error; 
+			return error;
+
+		error = DeviceCompatible();
+		if (error) 
+			return error;
 
 		InitGlobals();
 		FrmGotoForm(RomSelectorForm);

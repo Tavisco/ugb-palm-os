@@ -4,6 +4,8 @@
 #define PalmOSIncompatibleAlert		1000
 #define MustSelectRomAlert			1001
 #define FailedToSaveAlert			1002
+#define DeviceIncompatibleAlert		1003
+#define ResolutionTooLowAlert		1004
 
 #define RomSelectorMenu				1000
 #define RomSelectorMenuItemAbout	1000
