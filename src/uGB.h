@@ -63,5 +63,7 @@ void *GetObjectPtr(UInt16 objectID);
 Boolean RomSelectorFormHandleEvent(EventType * eventP);
 Boolean RomSelectorDoCommand(UInt16 command);
 void OpenAboutDialog(void);
+UInt32 getExtraKeysCallback (void);
+void perFrameCallback (void);
 
 #endif /* UGB_H */

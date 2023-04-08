@@ -10,6 +10,9 @@ struct PalmosData {
 	void *ramBuffer;	//in: 128K
 	uint32_t ramSize;	//out
 	
+	uint32_t (*getExtraKeysCallback)(void);
+	void (*perFrameCallback)(void);
+	
 	uint16_t *framebuffer;
 	uint32_t framebufferStride;			//IN PIXELS, not bytes!
 	uint8_t sizeMultiplier;

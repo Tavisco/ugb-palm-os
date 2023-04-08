@@ -228,6 +228,16 @@ static void InitForm(void)
 	RomSelectorInit(fp);
 }
 
+UInt32 getExtraKeysCallback (void)
+{
+	return NULL;
+}
+
+void perFrameCallback (void)
+{
+	return;
+}
+
 static void LaunchRom(void)
 {
 		UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16, screenPixelW, screenPixelH, screenStride;
@@ -276,6 +286,8 @@ static void LaunchRom(void)
 						pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
 						pd->sizeMultiplier = mult - 1;
 						pd->frameDithering = 3;
+						pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);
+						pd->perFrameCallback = swapPtr(&perFrameCallback);
 						
 						//set up key map
 						MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
