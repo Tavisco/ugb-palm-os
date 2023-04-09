@@ -40,6 +40,10 @@ static Boolean AppHandleEvent(EventType * eventP)
 			case RomSelectorForm:
 				FrmSetEventHandler(frmP, RomSelectorFormHandleEvent);
 				break;
+
+			case PlayerForm:
+				FrmSetEventHandler(frmP, PlayerFormHandleEvent);
+				break;
 		}
 		return true;
 	}

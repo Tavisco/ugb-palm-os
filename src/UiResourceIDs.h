@@ -16,4 +16,7 @@
 
 #define AboutForm					3000
 
+#define PlayerForm					4000
+#define PlayerFormStopButton		4000
+
 #endif

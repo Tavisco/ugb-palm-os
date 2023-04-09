@@ -28,6 +28,7 @@ static void LoadPlayer(void)
 
 	*globalsSlotPtr(GLOBALS_SLOT_PATH_ROM_FILE) = romFilePath;
 
+	FrmGotoForm(PlayerForm);
 }
 
 static void RomSelectorInit(FormType *frmP)

@@ -179,7 +179,7 @@ void perFrameCallback (void)
 	return;
 }
 
-static void LaunchRom(void)
+static void StartEmulation(void)
 {
 		UInt32 screenPixelW, screenPixelH, screenStride;
 		struct PalmosData *pd;
@@ -224,10 +224,6 @@ static void LaunchRom(void)
 
 					mask = KeySetMask(0);
 
-					WinEraseWindow();
-
-					WinDrawChars("Press power to stop emulation", 29, 1, 150);
-
 					if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
 						SysFatalAlert("Failed to load and relocate the ARM code");
 						
@@ -252,8 +248,6 @@ static void LaunchRom(void)
 		// (void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
 		//InitForm();
 }
-
-
 
 Boolean PlayerDoCommand(UInt16 command)
 {
@@ -284,15 +278,13 @@ Boolean PlayerDoCommand(UInt16 command)
 Boolean PlayerFormHandleEvent(EventType * eventP)
 {
 	Boolean handled = false;
-	
+	FormPtr fp = FrmGetActiveForm();
 
 	switch (eventP->eType)
 	{
-		// case menuEvent:
-		// 	return MainFormDoCommand(eventP->data.menu.itemID);
-
 		case frmOpenEvent:
-			//InitForm();
+			FrmDrawForm(fp);
+			StartEmulation();
 			handled = true;
 			break;
 

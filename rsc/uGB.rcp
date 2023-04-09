@@ -116,3 +116,10 @@ BEGIN
 	LABEL "More at:\r- https://dmitry.gr\r- https://palm.tavisco.dev" ID 3004  AT (5 85)
 	BUTTON "OK" ID 3001 AT (CENTER 124 40 12)
 END
+
+FORM ID 4000 AT (0 0 160 160)
+ NOSAVEBEHIND
+ NOFRAME
+BEGIN
+	BUTTON "Stop" ID 4000 AT (1 147 AUTO AUTO)
+END
