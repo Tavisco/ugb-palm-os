@@ -45,16 +45,22 @@
 		return a5 + slotID;
 	}
 
+	static inline void* innerGlobalsSlotVal(UInt8 slotID)	//[0] is reserved
+	{
+		return a5[slotID];
+	}
+
 	static inline void* globalsSlotVal(UInt8 slotID)	//[0] is reserved
 	{
 		if (!slotID || slotID > NUM_GLOBALS_SLOTS)
 			return NULL;
 
-		return a5[slotID];
+		return innerGlobalsSlotVal(slotID);
 	}
 
 	#define GLOBALS_SLOT_ROMS_LIST			1
 	#define GLOBALS_SLOT_PATH_ROM_FILE		2
+	#define GLOBALS_SLOT_EXTRA_KEY_VALUE	3
 #endif
 
 

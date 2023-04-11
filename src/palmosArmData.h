@@ -21,6 +21,7 @@ struct PalmosData {
 	uint8_t keyMapping[32];				//Nth byte is the key bit to give to GB (See gb.h) for Nth bit in palm's KeyCurrentState()
 };
 
+#define EXTRA_KEY_QUIT_EMU		0x80000000
 
 //param passed to armlet directly
 struct RelocatableArmletParams {

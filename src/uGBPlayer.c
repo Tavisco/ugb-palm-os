@@ -171,7 +171,8 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 
 UInt32 getExtraKeysCallback (void)
 {
-	return NULL;
+    UInt32 *keyPtr = (UInt32*) innerGlobalsSlotVal(GLOBALS_SLOT_EXTRA_KEY_VALUE);
+    return *keyPtr;
 }
 
 void perFrameCallback (void)
@@ -190,6 +191,7 @@ static void StartEmulation(void)
 		MemHandle mh;
 		UInt16 vrn;
 		UInt32 mask;
+		UInt32* keyPtr;
 
 		if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
 				errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
@@ -227,6 +229,13 @@ static void StartEmulation(void)
 
 					mask = KeySetMask(0);
 
+					// Allocate memory for a UInt32 value
+					keyPtr = (UInt32*) MemPtrNew(sizeof(UInt32));
+					MemSet(keyPtr, sizeof(UInt32), 0);
+
+					// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
+					*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = keyPtr;
+
 					if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
 						SysFatalAlert("Failed to load and relocate the ARM code");
 						
@@ -254,7 +263,12 @@ static void StartEmulation(void)
 
 static void StopEmulation(void)
 {
+	UInt32 *keyPtr = (UInt32*) innerGlobalsSlotVal(GLOBALS_SLOT_EXTRA_KEY_VALUE);
+	*keyPtr = EXTRA_KEY_QUIT_EMU;
 
+	*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = swapPtr(keyPtr);
+
+	FrmGotoForm(RomSelectorForm);
 }
 
 Boolean PlayerDoCommand(UInt16 command)
