@@ -176,7 +176,10 @@ UInt32 getExtraKeysCallback (void)
 
 void perFrameCallback (void)
 {
-	return;
+	EventType event;
+
+	EvtGetEvent(&event, 0);
+	FrmDispatchEvent(&event);
 }
 
 static void StartEmulation(void)
@@ -249,24 +252,23 @@ static void StartEmulation(void)
 		//InitForm();
 }
 
+static void StopEmulation(void)
+{
+
+}
+
 Boolean PlayerDoCommand(UInt16 command)
 {
 	Boolean handled = false;
 
 	switch (command)
 	{
-	// case RomSelectorLaunchButton:
-	// 	{
-	// 		LaunchRom();
-	// 		handled = true;
-	// 		break;
-	// 	}
-	// case RomSelectorMenuItemAbout:
-	// 	{
-	// 		OpenAboutDialog();
-	// 		handled = true;
-	// 		break;
-	// 	}
+	case PlayerFormStopButton:
+		{
+			StopEmulation();
+			handled = true;
+			break;
+		}
 
 	default:
 		break;
@@ -275,7 +277,7 @@ Boolean PlayerDoCommand(UInt16 command)
 	return handled;
 }
 
-Boolean PlayerFormHandleEvent(EventType * eventP)
+Boolean PlayerFormHandleEvent(EventType *eventP)
 {
 	Boolean handled = false;
 	FormPtr fp = FrmGetActiveForm();
@@ -288,11 +290,8 @@ Boolean PlayerFormHandleEvent(EventType * eventP)
 			handled = true;
 			break;
 
-		// case menuEvent:
-		// 	return PlayerDoCommand(eventP->data.menu.itemID);
-
-		// case ctlSelectEvent:
-		// 	return PlayerDoCommand(eventP->data.menu.itemID);
+		case ctlSelectEvent:
+			return PlayerDoCommand(eventP->data.ctlSelect.controlID);
 		
 		default:
 				break;
