@@ -119,6 +119,12 @@ Boolean RomSelectorDoCommand(UInt16 command)
 			handled = true;
 			break;
 		}
+	case RomSelectorMenuItemKeys:
+		{
+			FrmPopupForm(KeyBindingForm);
+			handled = true;
+			break;
+		}
 
 	default:
 		break;

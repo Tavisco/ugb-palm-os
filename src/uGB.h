@@ -80,4 +80,8 @@ void perFrameCallback (void);
 Boolean PlayerDoCommand(UInt16 command);
 Boolean PlayerFormHandleEvent(EventType *eventP);
 
+// uGBKeyBinding.c
+Boolean KeyBindingDoCommand(UInt16 command);
+Boolean KeyBindingHandleEvent(EventType *eventP);
+
 #endif /* UGB_H */

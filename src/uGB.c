@@ -44,6 +44,10 @@ static Boolean AppHandleEvent(EventType * eventP)
 			case PlayerForm:
 				FrmSetEventHandler(frmP, PlayerFormHandleEvent);
 				break;
+
+			case KeyBindingForm:
+				FrmSetEventHandler(frmP, KeyBindingHandleEvent);
+				break;
 		}
 		return true;
 	}
@@ -178,9 +182,9 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 		if (error) 
 			return error;
 
-		error = DeviceCompatible();
-		if (error) 
-			return error;
+		// error = DeviceCompatible();
+		// if (error) 
+		// 	return error;
 
 		InitGlobals();
 		FrmGotoForm(RomSelectorForm);

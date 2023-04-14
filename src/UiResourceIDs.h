@@ -21,9 +21,9 @@
 #define PlayerForm					4000
 #define PlayerFormStopButton		4000
 
-#define ControlBindingForm			5000
-#define ControlBindingList			5001
-#define ControlBindingSaveBtn		5002
+#define KeyBindingForm				5000
+#define KeyBindingList				5001
+#define KeyBindingSaveBtn			5002
 
 #define WaitButtonForm				6000
 #define WaitButtonCancelBtn			6001
