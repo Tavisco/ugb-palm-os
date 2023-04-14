@@ -6,6 +6,7 @@
 #define FailedToSaveAlert			1002
 #define DeviceIncompatibleAlert		1003
 #define ResolutionTooLowAlert		1004
+#define RomQuntityLimitAlert		1005
 
 #define RomSelectorMenu				1000
 #define RomSelectorMenuItemAbout	1000

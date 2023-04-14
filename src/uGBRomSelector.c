@@ -58,6 +58,11 @@ static void RomSelectorInit(FormType *frmP)
 				if (err == errNone && info.attributes != vfsFileAttrDirectory) {
 					StrCopy(romFileNameList[romCount], fileName);
 					romCount++;
+					if (romCount == MAX_ROMS-1)
+					{
+						FrmAlert(RomQuntityLimitAlert);
+						break;
+					}
 				} else { 
 					// handle error, possibly by breaking out of the loop 
 				}

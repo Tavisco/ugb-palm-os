@@ -85,6 +85,14 @@ BEGIN
      BUTTONS "OK" 
 END
 
+ALERT ID 1005
+WARNING
+BEGIN
+     TITLE "File limit reached"
+     MESSAGE "Only the first 64 roms can be listed at a time, and you have more than that in the roms folder. Only the first 64 are shown."
+     BUTTONS "OK" 
+END
+
 MENU ID 1000
 BEGIN
 	PULLDOWN "Options"

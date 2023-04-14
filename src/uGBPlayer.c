@@ -28,14 +28,10 @@ static Err gameSave(struct PalmosData *pd, UInt16 vrn)
 	Char *saveFileFullPath = MemPtrNew(MAX_SAVE_FULL_PATH_LEN);
 
 	MemSet(saveFileFullPath, MAX_SAVE_FULL_PATH_LEN, 0);
-
-	StrCopy(saveFileFullPath, UGB_BASE_PATH);
-	StrCat(saveFileFullPath, UGB_SAVE_DIR);
-	StrCat(saveFileFullPath, romFileName);
-	StrCat(saveFileFullPath, UGB_SAVE_EXTENSION);
+	StrPrintF(saveFileFullPath, "%s%s%s%s", UGB_BASE_PATH, UGB_SAVE_DIR, romFileName, UGB_SAVE_EXTENSION);
 
 	if (!saveFileFullPath)
-		SysFatalAlert("Failed to determine save file name!");
+		SysFatalAlert("Failed to determine save file path and name!");
 	
 	e = VFSFileOpen(vrn, saveFileFullPath, vfsModeWrite | vfsModeCreate | vfsModeTruncate, &fSave);
 	if (e != errNone)
@@ -119,14 +115,10 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 	MemSet(saveFileFullPath, MAX_SAVE_FULL_PATH_LEN, 0);
 
 	// Prepare romFile path
-	StrCopy(romFileFullPath, UGB_BASE_PATH);
-	StrCat(romFileFullPath, romFileName);
+	StrPrintF(romFileFullPath, "%s%s", UGB_BASE_PATH, romFileName);
 
 	// Prepare saveFile path
-	StrCopy(saveFileFullPath, UGB_BASE_PATH);
-	StrCat(saveFileFullPath, UGB_SAVE_DIR);
-	StrCat(saveFileFullPath, romFileName);
-	StrCat(saveFileFullPath, UGB_SAVE_EXTENSION);
+	StrPrintF(saveFileFullPath, "%s%s%s%s", UGB_BASE_PATH, UGB_SAVE_DIR, romFileName, UGB_SAVE_EXTENSION);
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
 		e = VFSFileOpen(vrn, romFileFullPath, vfsModeRead, &fGame);
