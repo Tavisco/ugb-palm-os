@@ -264,7 +264,7 @@ Boolean PlayerDoCommand(UInt16 command)
 	case PlayerFormStopButton:
 		{
 			*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = (void *)EXTRA_KEY_QUIT_EMU;
-			ErrAlertCustom(0, "Global set", NULL, NULL);
+			FrmGotoForm(RomSelectorForm);
 			handled = true;
 			break;
 		}
