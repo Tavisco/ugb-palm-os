@@ -1,10 +1,10 @@
 #include <PalmOS.h>
 #include <VFSMgr.h>
-#include "uGB.h"
-#include "UiResourceIDs.h"
-#include "palmosArmData.h"
 #include <PceNativeCall.h>
-#include "gb.h"
+#include "../uGB.h"
+#include "../UiResourceIDs.h"
+#include "../palmosArmData.h"
+#include "../gb.h"
 
 
 static void LoadPlayer(void)

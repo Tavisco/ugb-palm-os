@@ -1,10 +1,10 @@
 #include <PalmOS.h>
 #include <VFSMgr.h>
-#include "uGB.h"
-#include "UiResourceIDs.h"
-#include "palmosArmData.h"
 #include <PceNativeCall.h>
-#include "gb.h"
+#include "../uGB.h"
+#include "../UiResourceIDs.h"
+#include "../palmosArmData.h"
+#include "../gb.h"
 
 
 static UInt32 swap32(UInt32 val)
@@ -188,75 +188,75 @@ void perFrameCallback (void)
 
 static void StartEmulation(void)
 {
-		UInt32 screenPixelW, screenPixelH, screenStride;
-		struct PalmosData *pd;
-		UInt8 mult = 0;
-		MemHandle mh;
-		UInt16 vrn;
-		UInt32 mask;
+	UInt32 screenPixelW, screenPixelH, screenStride;
+	struct PalmosData *pd;
+	UInt8 mult = 0;
+	MemHandle mh;
+	UInt16 vrn;
+	UInt32 mask;
 
-		if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
-				errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
-				errNone == WinScreenGetAttribute(winScreenRowBytes, &screenStride) &&
-				screenPixelW >= 160 && screenPixelH >= 144) {
-			
-			//find the multiple
-			while (160 * mult <= screenPixelW && 144 * mult <= screenPixelH)
-				mult++;
-			
-			pd = MemPtrNew(sizeof(struct PalmosData));
-			if (pd) {
-				if (!loadROMIntoMemory(pd, &vrn))
-					SysFatalAlert("Cannot load selected game into memory!");
-				else {
-					pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
-					pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
-					pd->sizeMultiplier = mult - 1;
-					pd->frameDithering = 3;
-					pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);
-					pd->perFrameCallback = swapPtr(&perFrameCallback);
-					
-					//set up key map
-					MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
-					pd->keyMapping[__builtin_ctzl(keyBitHard1)] = KEY_BIT_START;
-					pd->keyMapping[__builtin_ctzl(keyBitHard2)] = KEY_BIT_SEL;
-					pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_A;
-					pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_B;
-					pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
-					pd->keyMapping[__builtin_ctzl(keyBitRockerUp)] = KEY_BIT_UP;
-					pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
-					pd->keyMapping[__builtin_ctzl(keyBitRockerDown)] = KEY_BIT_DOWN;
-					pd->keyMapping[__builtin_ctzl(keyBitRockerLeft)] = KEY_BIT_LEFT;
-					pd->keyMapping[__builtin_ctzl(keyBitRockerRight)] = KEY_BIT_RIGHT;
-
-					mask = KeySetMask(0);
-
-					// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
-					*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = 0;
-
-					if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
-						SysFatalAlert("Failed to load and relocate the ARM code");
-						
-					KeySetMask(mask);
-					
-					MemHandleUnlock(mh);
-					DmReleaseResource(mh);
+	if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
+			errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
+			errNone == WinScreenGetAttribute(winScreenRowBytes, &screenStride) &&
+			screenPixelW >= 160 && screenPixelH >= 144) {
+		
+		//find the multiple
+		while (160 * mult <= screenPixelW && 144 * mult <= screenPixelH)
+			mult++;
+		
+		pd = MemPtrNew(sizeof(struct PalmosData));
+		if (pd) {
+			if (!loadROMIntoMemory(pd, &vrn))
+				SysFatalAlert("Cannot load selected game into memory!");
+			else {
+				pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
+				pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
+				pd->sizeMultiplier = mult - 1;
+				pd->frameDithering = 3;
+				pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);
+				pd->perFrameCallback = swapPtr(&perFrameCallback);
 				
-					if (pd->ramSize && !gameSave(pd, vrn))
-						FrmAlert(FailedToSaveAlert);
+				//set up key map
+				MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
+				pd->keyMapping[__builtin_ctzl(keyBitHard1)] = KEY_BIT_START;
+				pd->keyMapping[__builtin_ctzl(keyBitHard2)] = KEY_BIT_SEL;
+				pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_A;
+				pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_B;
+				pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
+				pd->keyMapping[__builtin_ctzl(keyBitRockerUp)] = KEY_BIT_UP;
+				pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
+				pd->keyMapping[__builtin_ctzl(keyBitRockerDown)] = KEY_BIT_DOWN;
+				pd->keyMapping[__builtin_ctzl(keyBitRockerLeft)] = KEY_BIT_LEFT;
+				pd->keyMapping[__builtin_ctzl(keyBitRockerRight)] = KEY_BIT_RIGHT;
+
+				mask = KeySetMask(0);
+
+				// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
+				*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = 0;
+
+				if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
+					SysFatalAlert("Failed to load and relocate the ARM code");
 					
-					MemChunkFree(swapPtr(pd->ramBuffer));
-					FtrPtrFree(APP_CREATOR, FTR_ROM_MEMORY);
-				}
+				KeySetMask(mask);
 				
-				MemPtrFree(pd);
+				MemHandleUnlock(mh);
+				DmReleaseResource(mh);
+			
+				if (pd->ramSize && !gameSave(pd, vrn))
+					FrmAlert(FailedToSaveAlert);
+				
+				MemChunkFree(swapPtr(pd->ramBuffer));
+				FtrPtrFree(APP_CREATOR, FTR_ROM_MEMORY);
 			}
-		} else {
-			FrmAlert(ResolutionTooLowAlert);
+			
+			MemPtrFree(pd);
 		}
+	} else {
+		FrmAlert(ResolutionTooLowAlert);
+	}
 
-		// (void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
-		//InitForm();
+	// (void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
+	//InitForm();
 }
 
 Boolean PlayerDoCommand(UInt16 command)
