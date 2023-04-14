@@ -151,7 +151,7 @@ static void AppStop(void)
 {
 	UInt16 i;
 	Char **romFileNameList;
-	Char *saveFileName;
+	Char *romFileName;
 
 	// Cleanup ROMs file list
 	romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
@@ -162,9 +162,9 @@ static void AppStop(void)
 	MemPtrFree(romFileNameList);
 
 	// Cleanup save file name
-	saveFileName = globalsSlotVal(GLOBALS_SLOT_PATH_ROM_FILE);
-	if (saveFileName)
-		MemPtrFree(saveFileName);
+	romFileName = globalsSlotVal(GLOBALS_SLOT_ROM_FILE_NAME);
+	if (romFileName)
+		MemPtrFree(romFileName);
 
 	FrmCloseAllForms();
 }

@@ -24,18 +24,20 @@ static Err gameSave(struct PalmosData *pd, UInt16 vrn)
 	FileRef fSave;
 	Boolean ret;
 	Err e;
-	Char *fileName = globalsSlotVal(GLOBALS_SLOT_PATH_ROM_FILE);
-	Char *saveFileName = MemPtrNew(BASEPATH_LENGTH+SAVE_DIR_NAME_LENGTH+MAX_FILENAME_LENGTH+SAVE_EXTE_NAME_LENGTH);
+	Char *romFileName = globalsSlotVal(GLOBALS_SLOT_ROM_FILE_NAME);
+	Char *saveFileFullPath = MemPtrNew(MAX_SAVE_FULL_PATH_LEN);
 
-	MemSet(saveFileName, BASEPATH_LENGTH+SAVE_DIR_NAME_LENGTH+MAX_FILENAME_LENGTH+SAVE_EXTE_NAME_LENGTH, 0);
+	MemSet(saveFileFullPath, MAX_SAVE_FULL_PATH_LEN, 0);
 
-	StrCopy(saveFileName, fileName);
-	StrCat(saveFileName, UGB_SAVE_EXTENSION);
+	StrCopy(saveFileFullPath, UGB_BASE_PATH);
+	StrCat(saveFileFullPath, UGB_SAVE_DIR);
+	StrCat(saveFileFullPath, romFileName);
+	StrCat(saveFileFullPath, UGB_SAVE_EXTENSION);
 
-	if (!saveFileName)
+	if (!saveFileFullPath)
 		SysFatalAlert("Failed to determine save file name!");
 	
-	e = VFSFileOpen(vrn, saveFileName, vfsModeWrite | vfsModeCreate | vfsModeTruncate, &fSave);
+	e = VFSFileOpen(vrn, saveFileFullPath, vfsModeWrite | vfsModeCreate | vfsModeTruncate, &fSave);
 	if (e != errNone)
 		return false;
 
@@ -106,18 +108,28 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 	Err e;
 	UInt32 volIter = vfsIteratorStart;
 	Boolean ret = false;
-	Char *fileName = globalsSlotVal(GLOBALS_SLOT_PATH_ROM_FILE);
-	Char *saveFileName = MemPtrNew(BASEPATH_LENGTH+SAVE_DIR_NAME_LENGTH+MAX_FILENAME_LENGTH+SAVE_EXTE_NAME_LENGTH);
+	Char *romFileName = globalsSlotVal(GLOBALS_SLOT_ROM_FILE_NAME);
+	Char *romFileFullPath = MemPtrNew(MAX_ROM_FULL_PATH_LEN);
+	Char *saveFileFullPath = MemPtrNew(MAX_SAVE_FULL_PATH_LEN);
 	UInt32 fSize, pos, now, chunkSz = 32768;
 	Boolean haveSave = false;
 
-	MemSet(saveFileName, BASEPATH_LENGTH+SAVE_DIR_NAME_LENGTH+MAX_FILENAME_LENGTH+SAVE_EXTE_NAME_LENGTH, 0);
+	// Clear variables
+	MemSet(romFileFullPath, MAX_ROM_FULL_PATH_LEN, 0);
+	MemSet(saveFileFullPath, MAX_SAVE_FULL_PATH_LEN, 0);
 
-	StrCopy(saveFileName, fileName);
-	StrCat(saveFileName, UGB_SAVE_EXTENSION);
+	// Prepare romFile path
+	StrCopy(romFileFullPath, UGB_BASE_PATH);
+	StrCat(romFileFullPath, romFileName);
+
+	// Prepare saveFile path
+	StrCopy(saveFileFullPath, UGB_BASE_PATH);
+	StrCat(saveFileFullPath, UGB_SAVE_DIR);
+	StrCat(saveFileFullPath, romFileName);
+	StrCat(saveFileFullPath, UGB_SAVE_EXTENSION);
 
 	while (volIter != vfsIteratorStop && errNone == VFSVolumeEnumerate(&vrn, &volIter)) {
-		e = VFSFileOpen(vrn, fileName, vfsModeRead, &fGame);
+		e = VFSFileOpen(vrn, romFileFullPath, vfsModeRead, &fGame);
 		if (e == errNone) {
 			if (errNone == VFSFileSize(fGame, &fSize)) {
 				
@@ -144,7 +156,7 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 				if (!pd->ramBuffer)
 					SysFatalAlert("Failed to alloc ram");
 				
-				if (errNone == VFSFileOpen(vrn, saveFileName, vfsModeRead, &fSave)) {
+				if (errNone == VFSFileOpen(vrn, saveFileFullPath, vfsModeRead, &fSave)) {
 					if (errNone == VFSFileSize(fSave, &fSize) && fSize < RAM_SIZE) {
 						e = VFSFileRead(fSave, fSize, ram, &now);
 						haveSave = (e == errNone || e == vfsErrFileEOF) && now == fSize;

@@ -11,7 +11,7 @@ static void LoadPlayer(void)
 {
 	Int16 lstSelection;
 	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
-	Char *romFilePath = MemPtrNew(BASEPATH_LENGTH+MAX_FILENAME_LENGTH);
+	Char *romFileName = MemPtrNew(MAX_FILENAME_LENGTH);
 
 	lstSelection = LstGetSelection(GetObjectPtr(RomSelectorList));
 
@@ -21,12 +21,10 @@ static void LoadPlayer(void)
 		return;
 	}
 
-	MemSet(romFilePath, BASEPATH_LENGTH+MAX_FILENAME_LENGTH, 0);
+	MemSet(romFileName, MAX_FILENAME_LENGTH, 0);
+	StrCopy(romFileName, romFileNameList[lstSelection]);
 
-	StrCopy(romFilePath, UGB_BASE_PATH);
-	StrCat(romFilePath, romFileNameList[lstSelection]);
-
-	*globalsSlotPtr(GLOBALS_SLOT_PATH_ROM_FILE) = romFilePath;
+	*globalsSlotPtr(GLOBALS_SLOT_ROM_FILE_NAME) = romFileName;
 
 	FrmGotoForm(PlayerForm);
 }
