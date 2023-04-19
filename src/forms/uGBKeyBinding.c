@@ -6,9 +6,18 @@
 #include "../palmosArmData.h"
 #include "../gb.h"
 
+static void SetStatusLabel(Char *status)
+{
+	FormPtr fp = FrmGetActiveForm();
+
+	FrmHideObject(fp, FrmGetObjectIndex(fp, KeyBindingStatusLbl));
+	FrmCopyLabel(fp, KeyBindingStatusLbl, status);
+	FrmShowObject(fp, FrmGetObjectIndex(fp, KeyBindingStatusLbl));
+}
+
 static void ListenForKey(Int16 selection)
 {
-
+	SetStatusLabel("Press button NOW");
 }
 
 static void UnselectList(void)
