@@ -23,9 +23,9 @@
 
 #define KeyBindingForm				5000
 #define KeyBindingList				5001
-#define KeyBindingSaveBtn			5002
+#define KeyBindingOkBtn				5002
+#define KeyBindingCancelBtn			5003
+#define KeyBindingStatusLbl			5005
 
-#define WaitButtonForm				6000
-#define WaitButtonCancelBtn			6001
 
 #endif
