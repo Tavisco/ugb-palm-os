@@ -17,7 +17,49 @@ static void SetStatusLabel(Char *status)
 
 static void ListenForKey(Int16 selection)
 {
+	UInt32 noKey, newKey, mask;
+	UInt16 currentPrefSize, latestPrefSize;
+	Int16 prefsVersion = noPreferenceFound;
+	UgbKeyBindingPrefs *prefs;
+
+	currentPrefSize = 0;
+	latestPrefSize = sizeof(UgbKeyBindingPrefs);
+
+	prefs = MemPtrNew(latestPrefSize);
+	MemSet(prefs, latestPrefSize, 0);
+
+	prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
+
+	if (prefsVersion == noPreferenceFound){
+		// If no preference is found, set virtualKeysOnly to true by default
+		prefs->virtualKeysOnly = false;
+	} else if (currentPrefSize != latestPrefSize)
+	{
+		// If the preference size is invalid, return an error
+		SysFatalAlert("KeyMapping preferences is invalid!");
+	} else {
+		// Get the application preferences
+		PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, &prefs, &latestPrefSize, true);
+	}
+
+	noKey = KeyCurrentState();
+	newKey = noKey;
+
+	mask = KeySetMask(0);
+
 	SetStatusLabel("Press button NOW");
+	while (noKey == newKey)
+	{
+		newKey = KeyCurrentState();
+	}
+
+	prefs->keys[selection] = newKey;
+
+	PrefSetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, KEYMAPPING_PREF_LAST_VER, &prefs, latestPrefSize, true); 
+
+	SetStatusLabel("Saved!\rReady to bind next\rcontrol.");
+	KeySetMask(mask);
+	MemPtrFree(prefs);
 }
 
 static void UnselectList(void)
@@ -34,7 +76,7 @@ Boolean KeyBindingDoCommand(UInt16 command)
 
 	switch (command)
 	{
-	case KeyBindingCancelBtn:
+	case KeyBindingOkBtn:
 	{
 		FrmReturnToForm(0);
 		handled = true;

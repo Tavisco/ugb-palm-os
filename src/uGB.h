@@ -20,6 +20,8 @@
 #define UGB_SAVE_DIR				"saves/"
 #define UGB_SAVE_EXTENSION			".sav"
 #define FTR_ROM_MEMORY				(UInt16)0
+#define KEYMAPPING_PREF_ID			0
+#define KEYMAPPING_PREF_LAST_VER	0
 
 // From PalmSource
 #define keyBitRockerUp				0x00010000	// 5-way rocker
@@ -29,7 +31,6 @@
 #define keyBitRockerCenter			0x00100000
 
 #define RAM_SIZE		(128UL << 10)
-
 
 #ifndef __ARM__
 
@@ -65,6 +66,10 @@
 	#define GLOBALS_SLOT_EXTRA_KEY_VALUE	3
 #endif
 
+typedef struct {
+	Boolean	virtualKeysOnly;
+	UInt32	keys[8];
+} UgbKeyBindingPrefs;
 
 // uGB.c
 void *GetObjectPtr(UInt16 objectID);

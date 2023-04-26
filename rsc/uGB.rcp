@@ -146,7 +146,6 @@ BEGIN
 	
 	LABEL "Status:" ID 5004  AT (4 16)
 	LABEL "Select a control from\rthe list to start bind" ID 5005  AT (4 PrevBottom)
-	
-	BUTTON "OK" ID 5002  AT (5 95 AUTO AUTO)
-	BUTTON "Cancel" ID 5003 AT (PrevRight+4 PrevTop AUTO PrevHeight)
+
+	BUTTON "OK" ID 5002 AT (5 95 AUTO AUTO)
 END
