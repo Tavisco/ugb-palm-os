@@ -192,8 +192,27 @@ static void StartEmulation(void)
 	struct PalmosData *pd;
 	UInt8 mult = 0;
 	MemHandle mh;
-	UInt16 vrn;
+	UInt16 vrn, currentPrefSize, latestPrefSize;
 	UInt32 mask;
+	Int16 prefsVersion = noPreferenceFound;
+	UgbKeyBindingPrefs *prefs;
+
+	currentPrefSize = 0;
+	latestPrefSize = sizeof(UgbKeyBindingPrefs);
+
+	prefs = MemPtrNew(latestPrefSize);
+	MemSet(prefs, latestPrefSize, 0);
+
+	prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
+
+	if (prefsVersion == noPreferenceFound){
+		FrmAlert(NoKeyBindingAlert);
+	} else if (currentPrefSize != latestPrefSize) {
+		SysFatalAlert("KeyMapping preferences is invalid!");
+	} else {
+		// Get the application preferences
+		PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, &prefs, &latestPrefSize, true);
+	}
 
 	if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
 			errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
@@ -218,16 +237,14 @@ static void StartEmulation(void)
 				
 				//set up key map
 				MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
-				pd->keyMapping[__builtin_ctzl(keyBitHard1)] = KEY_BIT_START;
-				pd->keyMapping[__builtin_ctzl(keyBitHard2)] = KEY_BIT_SEL;
-				pd->keyMapping[__builtin_ctzl(keyBitHard4)] = KEY_BIT_A;
-				pd->keyMapping[__builtin_ctzl(keyBitHard3)] = KEY_BIT_B;
-				pd->keyMapping[__builtin_ctzl(keyBitPageUp)] = KEY_BIT_UP;
-				pd->keyMapping[__builtin_ctzl(keyBitRockerUp)] = KEY_BIT_UP;
-				pd->keyMapping[__builtin_ctzl(keyBitPageDown)] = KEY_BIT_DOWN;
-				pd->keyMapping[__builtin_ctzl(keyBitRockerDown)] = KEY_BIT_DOWN;
-				pd->keyMapping[__builtin_ctzl(keyBitRockerLeft)] = KEY_BIT_LEFT;
-				pd->keyMapping[__builtin_ctzl(keyBitRockerRight)] = KEY_BIT_RIGHT;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[2])] = KEY_BIT_RIGHT;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[3])] = KEY_BIT_DOWN;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[4])] = KEY_BIT_SEL;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
 
 				mask = KeySetMask(0);
 
@@ -250,6 +267,7 @@ static void StartEmulation(void)
 			}
 			
 			MemPtrFree(pd);
+			MemPtrFree(prefs);
 		}
 	} else {
 		FrmAlert(ResolutionTooLowAlert);

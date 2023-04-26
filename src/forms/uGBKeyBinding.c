@@ -33,8 +33,7 @@ static void ListenForKey(Int16 selection)
 	if (prefsVersion == noPreferenceFound){
 		// If no preference is found, set virtualKeysOnly to true by default
 		prefs->virtualKeysOnly = false;
-	} else if (currentPrefSize != latestPrefSize)
-	{
+	} else if (currentPrefSize != latestPrefSize) {
 		// If the preference size is invalid, return an error
 		SysFatalAlert("KeyMapping preferences is invalid!");
 	} else {

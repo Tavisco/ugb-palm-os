@@ -93,6 +93,14 @@ BEGIN
      BUTTONS "OK" 
 END
 
+ALERT ID 1006
+ERROR
+BEGIN
+     TITLE "No key binding"
+     MESSAGE "There is no key binding stored! Please bind the keys in the options menu before starting a game."
+     BUTTONS "OK" 
+END
+
 MENU ID 1000
 BEGIN
 	PULLDOWN "Options"
@@ -142,7 +150,7 @@ FORM ID 5000  AT ( 2 47 156 111 )
 	SAVEBEHIND
 BEGIN
 	TITLE "Control binding"
-	LIST "START" "SELECT" "UP" "DOWN" "LEFT" "RIGHT" "A" "B"   ID 5001  AT (92 17 60 90) VISIBLEITEMS 8
+	LIST "LEFT" "UP" "RIGHT" "DOWN" "SELECT" "START" "B" "A"   ID 5001  AT (92 17 60 90) VISIBLEITEMS 8
 	
 	LABEL "Status:" ID 5004  AT (4 16)
 	LABEL "Select a control from\rthe list to start bind" ID 5005  AT (4 PrevBottom)
