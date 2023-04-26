@@ -27,6 +27,7 @@ static void ListenForKey(Int16 selection)
 
 	prefs = MemPtrNew(latestPrefSize);
 	MemSet(prefs, latestPrefSize, 0);
+	MemSet(prefs->keys, sizeof(prefs->keys), 0);
 
 	prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
 
