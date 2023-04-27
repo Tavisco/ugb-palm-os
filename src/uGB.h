@@ -66,10 +66,10 @@
 	#define GLOBALS_SLOT_EXTRA_KEY_VALUE	3
 #endif
 
-typedef struct {
+struct UgbKeyBindingPrefs {
 	Boolean	virtualKeysOnly;
 	UInt32	keys[8];
-} UgbKeyBindingPrefs;
+};
 
 // uGB.c
 void *GetObjectPtr(UInt16 objectID);

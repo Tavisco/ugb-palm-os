@@ -20,10 +20,15 @@ static void ListenForKey(Int16 selection)
 	UInt32 noKey, newKey, mask;
 	UInt16 currentPrefSize, latestPrefSize;
 	Int16 prefsVersion = noPreferenceFound;
-	UgbKeyBindingPrefs *prefs;
+	struct UgbKeyBindingPrefs *prefs;
+
+	if (selection < 0 || selection > 7)
+	{
+		SysFatalAlert("Invalid keybind selection");
+	}
 
 	currentPrefSize = 0;
-	latestPrefSize = sizeof(UgbKeyBindingPrefs);
+	latestPrefSize = sizeof(struct UgbKeyBindingPrefs);
 
 	prefs = MemPtrNew(latestPrefSize);
 	MemSet(prefs, latestPrefSize, 0);

@@ -195,24 +195,7 @@ static void StartEmulation(void)
 	UInt16 vrn, currentPrefSize, latestPrefSize;
 	UInt32 mask;
 	Int16 prefsVersion = noPreferenceFound;
-	UgbKeyBindingPrefs *prefs;
-
-	currentPrefSize = 0;
-	latestPrefSize = sizeof(UgbKeyBindingPrefs);
-
-	prefs = MemPtrNew(latestPrefSize);
-	MemSet(prefs, latestPrefSize, 0);
-
-	prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
-
-	if (prefsVersion == noPreferenceFound){
-		FrmAlert(NoKeyBindingAlert);
-	} else if (currentPrefSize != latestPrefSize) {
-		SysFatalAlert("KeyMapping preferences is invalid!");
-	} else {
-		// Get the application preferences
-		PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, &prefs, &latestPrefSize, true);
-	}
+	struct UgbKeyBindingPrefs *prefs;
 
 	if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
 			errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
@@ -236,6 +219,29 @@ static void StartEmulation(void)
 				pd->perFrameCallback = swapPtr(&perFrameCallback);
 				
 				//set up key map
+				currentPrefSize = 0;
+				latestPrefSize = sizeof(struct UgbKeyBindingPrefs);
+
+				prefs = MemPtrNew(latestPrefSize);
+				if (!prefs)
+				{
+					SysFatalAlert("Failed to allocate memory to UgbKeyBindingPrefs");
+				}
+				MemSet(prefs, latestPrefSize, 0);
+				MemSet(prefs->keys, sizeof(prefs->keys), 0);
+
+				prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
+
+				if (prefsVersion == noPreferenceFound){
+					FrmAlert(NoKeyBindingAlert);
+				} else if (currentPrefSize != latestPrefSize) {
+					SysFatalAlert("KeyMapping preferences is invalid!");
+				} else {
+					// Get the application preferences
+					PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, &prefs, &latestPrefSize, true);
+					ErrAlertCustom(0, "Preferences loaded", 0, 0);
+				}
+
 				MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
 				pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
 				pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
@@ -245,7 +251,8 @@ static void StartEmulation(void)
 				pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
 				pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
 				pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
-
+				MemPtrFree(prefs);
+				
 				mask = KeySetMask(0);
 
 				// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
@@ -264,10 +271,10 @@ static void StartEmulation(void)
 				
 				MemChunkFree(swapPtr(pd->ramBuffer));
 				FtrPtrFree(APP_CREATOR, FTR_ROM_MEMORY);
+				MemPtrFree(prefs);
 			}
 			
 			MemPtrFree(pd);
-			MemPtrFree(prefs);
 		}
 	} else {
 		FrmAlert(ResolutionTooLowAlert);
