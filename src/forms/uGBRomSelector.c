@@ -9,15 +9,25 @@
 
 static void LoadPlayer(void)
 {
-	Int16 lstSelection;
+	Int16 lstSelection, prefsVersion;
+	UInt16 currentPrefSize;
 	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 	Char *romFileName = MemPtrNew(MAX_FILENAME_LENGTH);
 
+	currentPrefSize = 0;
 	lstSelection = LstGetSelection(GetObjectPtr(RomSelectorList));
+	prefsVersion = noPreferenceFound;
 
 	if (noListSelection == lstSelection)
 	{
 		FrmAlert(MustSelectRomAlert);
+		return;
+	}
+
+	prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
+
+	if (prefsVersion == noPreferenceFound){
+		FrmAlert(NoKeyBindingAlert);
 		return;
 	}
 

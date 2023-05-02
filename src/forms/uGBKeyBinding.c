@@ -44,7 +44,7 @@ static void ListenForKey(Int16 selection)
 		SysFatalAlert("KeyMapping preferences is invalid!");
 	} else {
 		// Get the application preferences
-		PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, &prefs, &latestPrefSize, true);
+		PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, prefs, &latestPrefSize, true);
 	}
 
 	noKey = KeyCurrentState();
@@ -60,7 +60,7 @@ static void ListenForKey(Int16 selection)
 
 	prefs->keys[selection] = newKey;
 
-	PrefSetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, KEYMAPPING_PREF_LAST_VER, &prefs, latestPrefSize, true); 
+	PrefSetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, KEYMAPPING_PREF_LAST_VER, prefs, latestPrefSize, true); 
 
 	SetStatusLabel("Saved!\rReady to bind next\rcontrol.");
 	KeySetMask(mask);

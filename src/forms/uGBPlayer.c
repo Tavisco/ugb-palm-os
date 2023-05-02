@@ -233,13 +233,12 @@ static void StartEmulation(void)
 				prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
 
 				if (prefsVersion == noPreferenceFound){
-					FrmAlert(NoKeyBindingAlert);
+					SysFatalAlert("No KeyMapping detected!");
 				} else if (currentPrefSize != latestPrefSize) {
 					SysFatalAlert("KeyMapping preferences is invalid!");
 				} else {
 					// Get the application preferences
-					PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, &prefs, &latestPrefSize, true);
-					ErrAlertCustom(0, "Preferences loaded", 0, 0);
+					PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, prefs, &latestPrefSize, true);
 				}
 
 				MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
@@ -251,7 +250,6 @@ static void StartEmulation(void)
 				pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
 				pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
 				pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
-				MemPtrFree(prefs);
 				
 				mask = KeySetMask(0);
 
