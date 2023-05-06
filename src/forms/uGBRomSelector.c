@@ -136,6 +136,13 @@ Boolean RomSelectorDoCommand(UInt16 command)
 			break;
 		}
 
+	case RomSelectorMenuItemFramsSkipping:
+		{
+			FrmPopupForm(FrameSkippingForm);
+			handled = true;
+			break;
+		}
+
 	default:
 		break;
 	}

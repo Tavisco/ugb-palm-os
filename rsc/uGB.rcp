@@ -30,7 +30,7 @@ HEX "code" ID 0
 	/* bytes below a5 */
 	0x00 0x00 0x00 0x00
 
-VERSION ID 1 "1.1"
+VERSION ID 1 "1.2"
 
 ICONFAMILYEX ID 1000
 BEGIN
@@ -106,8 +106,9 @@ BEGIN
 	PULLDOWN "Options"
 	BEGIN
 		MENUITEM "Key binding" ID 1000
+		MENUITEM "Frame skipping" ID 1001
 		MENUITEM SEPARATOR
-		MENUITEM "About" ID 1001
+		MENUITEM "About" ID 1002
 	END
 END
 
@@ -156,4 +157,24 @@ BEGIN
 	LABEL "Select a control from\rthe list to start bind" ID 5005  AT (4 PrevBottom)
 
 	BUTTON "OK" ID 5002 AT (5 95 AUTO AUTO)
+END
+
+FORM ID 6000  AT ( 2 47 156 111 )
+	FRAME
+	DEFAULTBTNID 6001
+	MODAL
+	SAVEBEHIND
+BEGIN
+	TITLE "Frame skipping"
+
+	LABEL "If the game is performing poorly on\ryour PDA, increase the value:" ID 6003  AT (5 15)
+
+	SLIDER ID 6002  AT (19 49 114 15) MIN 0 MAX 10 PAGESIZE 1 VALUE 3
+	LABEL "0" ID 6005  AT (22 66)
+	LABEL "10" ID 6006  AT (123 66)
+
+
+	BUTTON "OK" ID 6001 AT (5 95 AUTO AUTO)
+	LABEL "Current value:" ID 6004 AT (PrevRight+4 95) FONT 1
+	LABEL "03" 6007 AT (PrevRight+3 95)
 END

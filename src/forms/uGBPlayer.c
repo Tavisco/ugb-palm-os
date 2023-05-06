@@ -214,7 +214,7 @@ static void StartEmulation(void)
 				pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
 				pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
 				pd->sizeMultiplier = mult - 1;
-				pd->frameDithering = 3;
+				pd->frameDithering = 1;
 				pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);
 				pd->perFrameCallback = swapPtr(&perFrameCallback);
 				

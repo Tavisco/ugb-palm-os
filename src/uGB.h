@@ -89,4 +89,9 @@ Boolean PlayerFormHandleEvent(EventType *eventP);
 Boolean KeyBindingDoCommand(UInt16 command);
 Boolean KeyBindingHandleEvent(EventType *eventP);
 
+// uGBFrameSkipping.c
+Boolean FrameSkippingDoCommand(UInt16 command);
+Boolean FrameSkippingHandleEvent(EventType *eventP);
+
+
 #endif /* UGB_H */

@@ -1,10 +1,6 @@
 #include <PalmOS.h>
-#include <VFSMgr.h>
-#include <PceNativeCall.h>
 #include "../uGB.h"
 #include "../UiResourceIDs.h"
-#include "../palmosArmData.h"
-#include "../gb.h"
 
 static void SetStatusLabel(Char *status)
 {
