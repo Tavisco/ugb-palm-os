@@ -177,6 +177,47 @@ static void AppStop(void)
 	FrmCloseAllForms();
 }
 
+static void InitPreferences(void)
+{
+	Int16 prefsVersion = noPreferenceFound;
+	struct UgbPrefs *prefs;
+	UInt16 currentPrefSize, latestPrefSize;
+
+	currentPrefSize = 0;
+	latestPrefSize = sizeof(struct UgbPrefs);
+
+	prefs = MemPtrNew(latestPrefSize);
+	if (!prefs)
+	{
+		SysFatalAlert("Failed to allocate memory to UgbKeyBindingPrefs");
+	}
+	MemSet(prefs, latestPrefSize, 0);
+	MemSet(prefs->keys, sizeof(prefs->keys), 0);
+
+	prefsVersion = PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, NULL, &currentPrefSize, true);
+
+	if (prefsVersion == noPreferenceFound){
+		// If no preference is found, set default values
+		prefs->virtualKeysOnly = false;
+		prefs->frameDithering = DEFAULT_FRAME_DITHERING_VALUE;
+
+		PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true);
+	} else if (currentPrefSize != latestPrefSize) {
+		if (prefsVersion != PREFERENCES_LAST_VER)
+		{
+			// App updated
+			if (prefsVersion >= 0 && prefsVersion <= 1)
+			{
+				prefs->frameDithering = DEFAULT_FRAME_DITHERING_VALUE;
+			}
+
+			PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true);
+		} else {
+			SysFatalAlert("KeyMapping preferences is corrupted!");
+		}
+	}
+}
+
 UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
 	Err error;
@@ -191,6 +232,7 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 		//  	return error;
 
 		InitGlobals();
+		InitPreferences();
 		FrmGotoForm(RomSelectorForm);
 		AppEventLoop();
 

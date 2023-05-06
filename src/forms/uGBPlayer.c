@@ -195,7 +195,7 @@ static void StartEmulation(void)
 	UInt16 vrn, currentPrefSize, latestPrefSize;
 	UInt32 mask;
 	Int16 prefsVersion = noPreferenceFound;
-	struct UgbKeyBindingPrefs *prefs;
+	struct UgbPrefs *prefs;
 
 	if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
 			errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
@@ -211,45 +211,51 @@ static void StartEmulation(void)
 			if (!loadROMIntoMemory(pd, &vrn))
 				SysFatalAlert("Cannot load selected game into memory!");
 			else {
-				pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
-				pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
-				pd->sizeMultiplier = mult - 1;
-				pd->frameDithering = 1;
-				pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);
-				pd->perFrameCallback = swapPtr(&perFrameCallback);
-				
-				//set up key map
 				currentPrefSize = 0;
-				latestPrefSize = sizeof(struct UgbKeyBindingPrefs);
+				latestPrefSize = sizeof(struct UgbPrefs);
 
 				prefs = MemPtrNew(latestPrefSize);
 				if (!prefs)
 				{
-					SysFatalAlert("Failed to allocate memory to UgbKeyBindingPrefs");
+					SysFatalAlert("Failed to allocate memory to preferences");
 				}
 				MemSet(prefs, latestPrefSize, 0);
 				MemSet(prefs->keys, sizeof(prefs->keys), 0);
 
-				prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
+				prefsVersion = PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, NULL, &currentPrefSize, true);
 
 				if (prefsVersion == noPreferenceFound){
-					SysFatalAlert("No KeyMapping detected!");
+					SysFatalAlert("No preferences detected!");
 				} else if (currentPrefSize != latestPrefSize) {
-					SysFatalAlert("KeyMapping preferences is invalid!");
+					SysFatalAlert("Preferences are corrupted!");
 				} else {
 					// Get the application preferences
-					PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, prefs, &latestPrefSize, true);
+					PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 				}
 
+				pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
+				pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
+				pd->sizeMultiplier = mult - 1;
+				pd->frameDithering = prefs->frameDithering;
+				pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);
+				pd->perFrameCallback = swapPtr(&perFrameCallback);
+
+				//set up key map
+				currentPrefSize = 0;
+				latestPrefSize = sizeof(struct UgbPrefs);
+
 				MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
-				pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[2])] = KEY_BIT_RIGHT;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[3])] = KEY_BIT_DOWN;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[4])] = KEY_BIT_SEL;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
+				if (!prefs->virtualKeysOnly)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
+					pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
+					pd->keyMapping[__builtin_ctzl(prefs->keys[2])] = KEY_BIT_RIGHT;
+					pd->keyMapping[__builtin_ctzl(prefs->keys[3])] = KEY_BIT_DOWN;
+					pd->keyMapping[__builtin_ctzl(prefs->keys[4])] = KEY_BIT_SEL;
+					pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
+					pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
+					pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
+				}
 				
 				mask = KeySetMask(0);
 

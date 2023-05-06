@@ -24,7 +24,7 @@ static void LoadPlayer(void)
 		return;
 	}
 
-	prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
+	prefsVersion = PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, NULL, &currentPrefSize, true);
 
 	if (prefsVersion == noPreferenceFound){
 		FrmAlert(NoKeyBindingAlert);

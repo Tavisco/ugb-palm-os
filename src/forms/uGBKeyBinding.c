@@ -16,7 +16,7 @@ static void ListenForKey(Int16 selection)
 	UInt32 noKey, newKey, mask;
 	UInt16 currentPrefSize, latestPrefSize;
 	Int16 prefsVersion = noPreferenceFound;
-	struct UgbKeyBindingPrefs *prefs;
+	struct UgbPrefs *prefs;
 
 	if (selection < 0 || selection > 7)
 	{
@@ -24,23 +24,22 @@ static void ListenForKey(Int16 selection)
 	}
 
 	currentPrefSize = 0;
-	latestPrefSize = sizeof(struct UgbKeyBindingPrefs);
+	latestPrefSize = sizeof(struct UgbPrefs);
 
 	prefs = MemPtrNew(latestPrefSize);
 	MemSet(prefs, latestPrefSize, 0);
 	MemSet(prefs->keys, sizeof(prefs->keys), 0);
 
-	prefsVersion = PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, NULL, &currentPrefSize, true);
+	prefsVersion = PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, NULL, &currentPrefSize, true);
 
 	if (prefsVersion == noPreferenceFound){
-		// If no preference is found, set virtualKeysOnly to true by default
-		prefs->virtualKeysOnly = false;
+		SysFatalAlert("No preferences detected!");
 	} else if (currentPrefSize != latestPrefSize) {
 		// If the preference size is invalid, return an error
-		SysFatalAlert("KeyMapping preferences is invalid!");
+		SysFatalAlert("Preferences are corrupted!");
 	} else {
 		// Get the application preferences
-		PrefGetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, prefs, &latestPrefSize, true);
+		PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 	}
 
 	noKey = KeyCurrentState();
@@ -56,7 +55,7 @@ static void ListenForKey(Int16 selection)
 
 	prefs->keys[selection] = newKey;
 
-	PrefSetAppPreferences(APP_CREATOR, KEYMAPPING_PREF_ID, KEYMAPPING_PREF_LAST_VER, prefs, latestPrefSize, true); 
+	PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true); 
 
 	SetStatusLabel("Saved!\rReady to bind next\rcontrol.");
 	KeySetMask(mask);
