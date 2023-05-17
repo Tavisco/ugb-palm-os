@@ -23,7 +23,6 @@ Boolean FrameSkippingDoCommand(UInt16 command)
 	return handled;
 }
 
-// given a UInt16 value, convert it to a string and update the label
 static void updateSliderLabel(UInt16 value, FormPtr fp)
 {
 	Char *sliderValue;

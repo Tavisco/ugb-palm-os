@@ -216,6 +216,8 @@ static void InitPreferences(void)
 			SysFatalAlert("KeyMapping preferences is corrupted!");
 		}
 	}
+
+	MemPtrFree(prefs);
 }
 
 UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
