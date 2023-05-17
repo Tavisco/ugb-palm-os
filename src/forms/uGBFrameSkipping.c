@@ -37,6 +37,39 @@ static void updateSliderLabel(UInt16 value, FormPtr fp)
 	MemPtrFree(sliderValue);
 }
 
+static void updatePrefsWithValue(UInt16 value)
+{
+	UInt16 latestPrefSize;
+	struct UgbPrefs *prefs;
+
+	latestPrefSize = sizeof(struct UgbPrefs);
+	prefs = MemPtrNew(latestPrefSize);
+	MemSet(prefs, latestPrefSize, 0);
+
+	PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
+
+	prefs->frameDithering = (UInt8)value + 1;
+	PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true);
+	MemPtrFree(prefs);
+}
+
+static void setSliderValue(FormPtr fp)
+{
+	UInt16 latestPrefSize;
+	struct UgbPrefs *prefs;
+
+	latestPrefSize = sizeof(struct UgbPrefs);
+	prefs = MemPtrNew(latestPrefSize);
+	MemSet(prefs, latestPrefSize, 0);
+
+	PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
+
+	updateSliderLabel(prefs->frameDithering - 1, fp);
+	FrmSetControlValue(fp, FrmGetObjectIndex(fp, FrameSkippingSlider), prefs->frameDithering - 1);
+
+	MemPtrFree(prefs);
+}
+
 Boolean FrameSkippingHandleEvent(EventType *eventP)
 {
 	Boolean handled = false;
@@ -46,6 +79,7 @@ Boolean FrameSkippingHandleEvent(EventType *eventP)
 	{
 	case frmOpenEvent:
 		FrmDrawForm(fp);
+		setSliderValue(fp);
 		handled = true;
 		break;
 
@@ -54,6 +88,7 @@ Boolean FrameSkippingHandleEvent(EventType *eventP)
 
 	case ctlRepeatEvent:
 		updateSliderLabel(eventP->data.ctlRepeat.value, fp);
+		updatePrefsWithValue(eventP->data.ctlRepeat.value);
 		break;
 
 	default:
