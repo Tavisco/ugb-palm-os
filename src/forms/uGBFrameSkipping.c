@@ -23,6 +23,21 @@ Boolean FrameSkippingDoCommand(UInt16 command)
 	return handled;
 }
 
+// given a UInt16 value, convert it to a string and update the label
+static void updateSliderLabel(UInt16 value, FormPtr fp)
+{
+	Char *sliderValue;
+
+	sliderValue = MemPtrNew(3);
+
+	StrIToA(sliderValue, value);
+	FrmHideObject(fp, FrmGetObjectIndex(fp, FrameSkippingCurrValueLbl));
+	FrmCopyLabel(fp, FrameSkippingCurrValueLbl, sliderValue);
+	FrmShowObject(fp, FrmGetObjectIndex(fp, FrameSkippingCurrValueLbl));
+
+	MemPtrFree(sliderValue);
+}
+
 Boolean FrameSkippingHandleEvent(EventType *eventP)
 {
 	Boolean handled = false;
@@ -37,6 +52,10 @@ Boolean FrameSkippingHandleEvent(EventType *eventP)
 
 	case ctlSelectEvent:
 		return FrameSkippingDoCommand(eventP->data.ctlSelect.controlID);
+
+	case ctlRepeatEvent:
+		updateSliderLabel(eventP->data.ctlRepeat.value, fp);
+		break;
 
 	default:
 		break;

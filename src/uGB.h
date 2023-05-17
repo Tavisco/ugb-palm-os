@@ -24,13 +24,6 @@
 #define PREFERENCES_ID				0
 #define PREFERENCES_LAST_VER		1
 
-// From PalmSource
-#define keyBitRockerUp				0x00010000	// 5-way rocker
-#define keyBitRockerDown			0x00020000
-#define keyBitRockerLeft			0x00040000
-#define keyBitRockerRight			0x00080000
-#define keyBitRockerCenter			0x00100000
-
 #define RAM_SIZE		(128UL << 10)
 
 #ifndef __ARM__
