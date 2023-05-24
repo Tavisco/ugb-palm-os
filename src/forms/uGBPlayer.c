@@ -129,7 +129,7 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 				
 				e = FtrPtrNew(APP_CREATOR, FTR_ROM_MEMORY, fSize, &rom);
 				if (e != errNone)
-					SysFatalAlert("Cannot alloc rom");
+					SysFatalAlert("Failed to allocate memory for rom. Try to free some internal memory and restart the emulator.");
 				
 				for (pos = 0; pos < fSize; pos += now) {
 					now = fSize - pos;
@@ -137,8 +137,25 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 						now = chunkSz;
 					
 					e = VFSFileReadData(fGame, now, rom, pos, &now);
-					if (e != errNone && e != vfsErrFileEOF)
-						SysFatalAlert("read error");
+					switch (e)
+					{
+					case errNone:
+					case vfsErrFileEOF:
+						break;
+					case expErrNotOpen:
+						SysFatalAlert("Failed to read ROM file: Slot driver library has not been opened");
+					case vfsErrFileBadRef:
+						SysFatalAlert("Failed to read ROM file: The fileref is invalid. The rom name contains non-latin characters?");
+					case vfsErrFilePermissionDenied:
+						SysFatalAlert("Failed to read ROM file: The file is read only");
+					case vfsErrIsADirectory:
+						SysFatalAlert("Failed to read ROM file: This operation requires a regular file, not a directory");
+					case vfsErrNoFileSystem:
+						SysFatalAlert("Failed to read ROM file: No installed filesystem supports this operation");
+					default:
+						SysFatalAlert("Failed to read ROM file: Unknown error");
+						break;
+					}
 				}
 				
 				pd->rom = swapPtr(rom);
@@ -192,9 +209,8 @@ static void StartEmulation(void)
 	struct PalmosData *pd;
 	UInt8 mult = 0;
 	MemHandle mh;
-	UInt16 vrn, currentPrefSize, latestPrefSize;
+	UInt16 vrn, latestPrefSize;
 	UInt32 mask;
-	Int16 prefsVersion = noPreferenceFound;
 	struct UgbPrefs *prefs;
 
 	if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
@@ -211,7 +227,6 @@ static void StartEmulation(void)
 			if (!loadROMIntoMemory(pd, &vrn))
 				SysFatalAlert("Cannot load selected game into memory!");
 			else {
-				currentPrefSize = 0;
 				latestPrefSize = sizeof(struct UgbPrefs);
 
 				prefs = MemPtrNew(latestPrefSize);
@@ -222,40 +237,26 @@ static void StartEmulation(void)
 				MemSet(prefs, latestPrefSize, 0);
 				MemSet(prefs->keys, sizeof(prefs->keys), 0);
 
-				prefsVersion = PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, NULL, &currentPrefSize, true);
-
-				if (prefsVersion == noPreferenceFound){
-					SysFatalAlert("No preferences detected!");
-				} else if (currentPrefSize != latestPrefSize) {
-					SysFatalAlert("Preferences are corrupted!");
-				} else {
-					// Get the application preferences
-					PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
-				}
+				// Get the application preferences
+				PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 
 				pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
 				pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
 				pd->sizeMultiplier = mult - 1;
-				pd->frameDithering = prefs->frameDithering;
+				pd->frameDithering = prefs->frameSkipping + 1;
 				pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);
 				pd->perFrameCallback = swapPtr(&perFrameCallback);
 
-				//set up key map
-				currentPrefSize = 0;
-				latestPrefSize = sizeof(struct UgbPrefs);
-
 				MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
-				if (!prefs->virtualKeysOnly)
-				{
-					pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
-					pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
-					pd->keyMapping[__builtin_ctzl(prefs->keys[2])] = KEY_BIT_RIGHT;
-					pd->keyMapping[__builtin_ctzl(prefs->keys[3])] = KEY_BIT_DOWN;
-					pd->keyMapping[__builtin_ctzl(prefs->keys[4])] = KEY_BIT_SEL;
-					pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
-					pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
-					pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
-				}
+
+				pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[2])] = KEY_BIT_RIGHT;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[3])] = KEY_BIT_DOWN;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[4])] = KEY_BIT_SEL;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
+				pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
 				
 				mask = KeySetMask(0);
 

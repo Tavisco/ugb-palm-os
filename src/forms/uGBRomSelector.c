@@ -9,14 +9,13 @@
 
 static void LoadPlayer(void)
 {
-	Int16 lstSelection, prefsVersion;
-	UInt16 currentPrefSize;
+	Int16 lstSelection;
+	UInt16 latestPrefSize;
 	Char **romFileNameList = globalsSlotVal(GLOBALS_SLOT_ROMS_LIST);
 	Char *romFileName = MemPtrNew(MAX_FILENAME_LENGTH);
+	struct UgbPrefs *prefs;
 
-	currentPrefSize = 0;
 	lstSelection = LstGetSelection(GetObjectPtr(RomSelectorList));
-	prefsVersion = noPreferenceFound;
 
 	if (noListSelection == lstSelection)
 	{
@@ -24,9 +23,19 @@ static void LoadPlayer(void)
 		return;
 	}
 
-	prefsVersion = PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, NULL, &currentPrefSize, true);
+	latestPrefSize = sizeof(struct UgbPrefs);
 
-	if (prefsVersion == noPreferenceFound){
+	prefs = MemPtrNew(latestPrefSize);
+	if (!prefs)
+	{
+		SysFatalAlert("Failed to allocate memory to preferences");
+	}
+	MemSet(prefs, latestPrefSize, 0);
+
+	// Get the application preferences
+	PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
+
+	if (!prefs->keyBinded){
 		FrmAlert(NoKeyBindingAlert);
 		return;
 	}

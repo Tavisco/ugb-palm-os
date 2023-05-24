@@ -14,7 +14,7 @@
 #define SAVE_EXTE_NAME_LENGTH			7
 #define MAX_ROM_FULL_PATH_LEN			BASEPATH_LENGTH+MAX_FILENAME_LENGTH
 #define MAX_SAVE_FULL_PATH_LEN			MAX_ROM_FULL_PATH_LEN+SAVE_DIR_NAME_LENGTH+SAVE_EXTE_NAME_LENGTH
-#define DEFAULT_FRAME_DITHERING_VALUE	3
+#define DEFAULT_FRAME_SKIPPING_VALUE	2
 
 #define APP_CREATOR					'UGB_'
 #define UGB_BASE_PATH				"/Palm/Programs/uGB/"
@@ -61,9 +61,9 @@
 #endif
 
 struct UgbPrefs {
-	Boolean	virtualKeysOnly;
+	Boolean	keyBinded;
 	UInt32	keys[8];
-	UInt8	frameDithering;
+	UInt8	frameSkipping;
 };
 
 // uGB.c

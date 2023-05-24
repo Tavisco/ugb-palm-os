@@ -15,7 +15,6 @@ Boolean FrameSkippingDoCommand(UInt16 command)
 		break;
 	}
 
-
 	default:
 		break;
 	}
@@ -48,7 +47,7 @@ static void updatePrefsWithValue(UInt16 value)
 
 	PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 
-	prefs->frameDithering = (UInt8)value + 1;
+	prefs->frameSkipping = (UInt8)value;
 	PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true);
 	MemPtrFree(prefs);
 }
@@ -64,8 +63,8 @@ static void setSliderValue(FormPtr fp)
 
 	PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 
-	updateSliderLabel(prefs->frameDithering - 1, fp);
-	FrmSetControlValue(fp, FrmGetObjectIndex(fp, FrameSkippingSlider), prefs->frameDithering - 1);
+	updateSliderLabel(prefs->frameSkipping, fp);
+	FrmSetControlValue(fp, FrmGetObjectIndex(fp, FrameSkippingSlider), prefs->frameSkipping);
 
 	MemPtrFree(prefs);
 }

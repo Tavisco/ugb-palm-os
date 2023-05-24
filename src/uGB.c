@@ -198,8 +198,8 @@ static void InitPreferences(void)
 
 	if (prefsVersion == noPreferenceFound){
 		// If no preference is found, set default values
-		prefs->virtualKeysOnly = false;
-		prefs->frameDithering = DEFAULT_FRAME_DITHERING_VALUE;
+		prefs->keyBinded = false;
+		prefs->frameSkipping = DEFAULT_FRAME_SKIPPING_VALUE;
 
 		PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true);
 	} else if (currentPrefSize != latestPrefSize) {
@@ -208,7 +208,7 @@ static void InitPreferences(void)
 			// App updated
 			if (prefsVersion >= 0 && prefsVersion <= 1)
 			{
-				prefs->frameDithering = DEFAULT_FRAME_DITHERING_VALUE;
+				prefs->frameSkipping = DEFAULT_FRAME_SKIPPING_VALUE;
 			}
 
 			PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true);
@@ -229,9 +229,9 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 		if (error) 
 			return error;
 
-		// error = DeviceCompatible();
-		// if (error)
-		//  	return error;
+		error = DeviceCompatible();
+		if (error)
+		 	return error;
 
 		InitGlobals();
 		InitPreferences();

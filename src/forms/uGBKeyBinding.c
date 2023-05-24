@@ -54,6 +54,7 @@ static void ListenForKey(Int16 selection)
 	}
 
 	prefs->keys[selection] = newKey;
+	prefs->keyBinded = true;
 
 	PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true); 
 
