@@ -1,12 +1,16 @@
 # Changelog
 
-## V1.2 - Unreleased
+## V1.2 - 2023/05/24
 
-## Added
+### Added
 - Frameskip configuration
+- More descritive error messages when loading ROMs
+
+### Fixed
+- Correctly prompting to key-bind when running for the first time
 
 
-## V1.1 - 02/05/2023
+## V1.1 - 2023/05/02
 
 ### Added
 - Key Mapping

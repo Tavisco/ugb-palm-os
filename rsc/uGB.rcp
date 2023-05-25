@@ -130,7 +130,7 @@ FORM ID 3000 AT (2 18 156 140)
     DEFAULTBTNID 3001
 BEGIN
 	TITLE "About uGB"
-	LABEL "Version 1.1" ID 3002 AT (5 15) FONT 1
+	LABEL "Version 1.2" ID 3002 AT (5 15) FONT 1
 	LABEL "uGB Core by DmitryGR\rApp by Tavisco\rIcon by Pinchies" ID 3003  AT (5 27)
 	LABEL "Made in 2023" ID 3005  AT (5 67)
 	LABEL "More at:\r- https://dmitry.gr\r- https://palm.tavisco.dev" ID 3004  AT (5 85)
