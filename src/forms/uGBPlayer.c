@@ -6,6 +6,16 @@
 #include "../palmosArmData.h"
 #include "../gb.h"
 
+#define BPP_2	2
+#define	BPP_4	4
+#define BPP_16	16
+
+enum GameColorMode
+{
+	NON_COLOR_GAME = 0,
+	COLOR_GAME = 1,
+	COLOR_GAME_REQUIRE_COLOR = 3
+};
 
 static UInt32 swap32(UInt32 val)
 {
@@ -96,6 +106,104 @@ static Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param
 	return true;
 }
 
+static void determineScreenModeForRom(struct PalmosData *pd, void *rom)
+{
+	UInt8 gbcFlag = *((UInt8*)rom + 0x143);
+	Err error = errNone;
+	UInt32 prevDepth, desiredDepth = BPP_16, depths;
+	Boolean deviceSupportColors = false;
+	enum GameColorMode gameColorMode;
+
+	if (errNone != WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL))
+	{
+		SysFatalAlert("Failed to get screen mode");
+	}
+
+	if ((gbcFlag & 0x80) == 0)
+	{
+		// gameboy non-color game
+		gameColorMode = NON_COLOR_GAME;
+	}
+	else if ((gbcFlag & 0x40) == 0)
+	{
+		// gameboy color game that can run without color
+		gameColorMode = COLOR_GAME;
+	}
+	else
+	{
+		// gameboy color game that requires color
+		gameColorMode = COLOR_GAME_REQUIRE_COLOR;
+	}
+
+	// Get all screen modes supported by the device
+	error = WinScreenMode(winScreenModeGetSupportedDepths, NULL, NULL, &depths, NULL);
+	if (error != errNone)
+	{
+		SysFatalAlert("Failed to get supported screen depths");
+	}
+
+	// if 16bpp supported, emulate game boy color and run in color always
+	if (depths & (1UL << (BPP_16 - 1)))
+	{
+		pd->actAsOriginalGameboy = 0;
+		pd->outputColorMode = COLOR_MODE_RGB565;
+		return;
+	}
+
+	// if 4bpp and 2bpp both supported: for all games that do not REQUIRE color, run in 2bpp. all games that REQUIRE color, run in 4bpp and downmix
+	if ((depths & (1UL << (BPP_4 - 1))) && (depths & (1UL << (BPP_2 - 1))))
+	{
+		if (gameColorMode == NON_COLOR_GAME)
+		{
+			// set to 2bpp
+			pd->actAsOriginalGameboy = 1;
+			pd->outputColorMode = COLOR_MODE_2BPP_DIRECT;
+			return;
+		}
+		else
+		{
+			// set to 4 bpp
+			pd->actAsOriginalGameboy = 0;
+			pd->outputColorMode = COLOR_MODE_4BPP_MIXED;
+			return;
+		}
+	}
+
+	// if 4bpp is supported but 2bpp is not (VERY UNLIKELY): all games run as gameboy color and downmix.
+	if (depths & (1UL << (BPP_4 - 1)) && !(depths & (1UL << (BPP_2 - 1))))
+	{
+		// set to 4 bpp
+		pd->actAsOriginalGameboy = 0;
+		pd->outputColorMode = COLOR_MODE_4BPP_MIXED;
+		return;
+	}
+
+	// if 2bpp is supported but 4bpp is not: run in 2bpp mode. refuse to run color-requiring games (tell user that 4bpp is required)
+	if (depths & (1UL << (BPP_2 - 1)) && !(depths & (1UL << (BPP_4 - 1))))
+	{
+		if (gameColorMode == NON_COLOR_GAME)
+		{
+			// set to 2bpp
+			pd->actAsOriginalGameboy = 1;
+			pd->outputColorMode = COLOR_MODE_2BPP_DIRECT;
+			return;
+		}
+		else
+		{
+			// refuse to run color-requiring games
+			FrmAlert(ColorGameRequireColorAlert);
+			// return to rom selector
+			FrmGotoForm(RomSelectorForm);
+			return;
+		}
+	}
+
+	// if only 1bpp is supported - refuse to run anything, tell user that 2bpp is minimum
+	FrmAlert(OneBppOnlyAlert);
+	FrmGotoForm(RomSelectorForm);
+	return;
+}
+
 static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 {
 	FileRef fGame, fSave;
@@ -157,7 +265,7 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 						break;
 					}
 				}
-				
+				determineScreenModeForRom(pd, rom);
 				pd->rom = swapPtr(rom);
 				pd->romSz = swap32(fSize);
 				pd->ramBuffer = swapPtr(ram = MemChunkNew(0, RAM_SIZE, 0x1200));
@@ -188,6 +296,32 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 	}
 	
 	return ret;
+}
+
+static void setScreenModeForRom(uint8_t outputColorMode)
+{
+	UInt32 desiredDepth;
+	switch (outputColorMode)
+	{
+	case COLOR_MODE_RGB565:
+		desiredDepth = BPP_16;
+		break;
+	case COLOR_MODE_4BPP_MIXED:
+		desiredDepth = BPP_4;
+		break;
+	case COLOR_MODE_2BPP_DIRECT:
+		desiredDepth = BPP_2;
+		break;
+	
+	default:
+		SysFatalAlert("Unknown color mode");
+		break;
+	}
+
+	if (errNone != WinScreenMode(winScreenModeSet, NULL, NULL, &desiredDepth, NULL))
+	{
+		SysFatalAlert("Failed to set screen mode");
+	}
 }
 
 UInt32 getExtraKeysCallback (void)
@@ -240,8 +374,9 @@ static void StartEmulation(void)
 				// Get the application preferences
 				PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 
+				setScreenModeForRom(pd->outputColorMode);
 				pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
-				pd->framebufferStride = swap32(screenStride / sizeof(UInt16));
+				pd->framebufferStride = swap32(screenStride);
 				pd->sizeMultiplier = mult - 1;
 				pd->frameDithering = prefs->frameSkipping + 1;
 				pd->getExtraKeysCallback = swapPtr(&getExtraKeysCallback);

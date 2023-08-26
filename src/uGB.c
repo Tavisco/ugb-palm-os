@@ -106,15 +106,13 @@ static Err RomVersionCompatible(UInt16 launchFlags) {
 }
 
 static Err DeviceCompatible(void) {
-	UInt32 processorType, winMgrVer, prevDepth, desiredDepth = 16,  screenPixelW, screenPixelH;
+	UInt32 processorType, winMgrVer, screenPixelW, screenPixelH;
 
 	if (
 		errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
 		sysFtrNumProcessorIsARM(processorType) &&
 		errNone == FtrGet(sysFtrCreator, sysFtrNumWinVersion, &winMgrVer) &&
 		winMgrVer >= 4 &&
-		errNone == WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL) &&
-		errNone == WinScreenMode(winScreenModeSet, NULL, NULL, &desiredDepth, NULL) &&
 		errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
 		errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
 		screenPixelW >= 160 && screenPixelH >= 144

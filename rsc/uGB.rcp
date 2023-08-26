@@ -101,6 +101,22 @@ BEGIN
      BUTTONS "OK" 
 END
 
+ALERT ID 1007
+ERROR
+BEGIN
+     TITLE "This game requires color!"
+     MESSAGE "This game requires a color screen to run. Please select another game."
+     BUTTONS "OK" 
+END
+
+ALERT ID 1008
+ERROR
+BEGIN
+    TITLE "1BPP screens are not supported!"
+    MESSAGE "uGB does not support 1BPP screens"
+    BUTTONS "OK" 
+END
+
 MENU ID 1000
 BEGIN
 	PULLDOWN "Options"

@@ -8,6 +8,8 @@
 #define ResolutionTooLowAlert				1004
 #define RomQuntityLimitAlert				1005
 #define NoKeyBindingAlert					1006
+#define ColorGameRequireColorAlert			1007
+#define OneBppOnlyAlert						1008
 
 #define RomSelectorMenu						1000
 #define RomSelectorMenuItemKeys				1000
