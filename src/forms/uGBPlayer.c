@@ -349,7 +349,6 @@ static void StartEmulation(void)
 
 	if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
 			errNone == WinScreenGetAttribute(winScreenHeight, &screenPixelH) &&
-			errNone == WinScreenGetAttribute(winScreenRowBytes, &screenStride) &&
 			screenPixelW >= 160 && screenPixelH >= 144) {
 		
 		//find the multiple
@@ -375,6 +374,10 @@ static void StartEmulation(void)
 				PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 
 				setScreenModeForRom(pd->outputColorMode);
+
+				if (errNone != WinScreenGetAttribute(winScreenRowBytes, &screenStride))
+					SysFatalAlert("Failed to get screen stride");
+
 				pd->framebuffer = swapPtr(BmpGetBits(WinGetBitmap(WinGetDisplayWindow())));
 				pd->framebufferStride = swap32(screenStride);
 				pd->sizeMultiplier = mult - 1;
@@ -412,6 +415,10 @@ static void StartEmulation(void)
 				MemChunkFree(swapPtr(pd->ramBuffer));
 				FtrPtrFree(APP_CREATOR, FTR_ROM_MEMORY);
 				MemPtrFree(prefs);
+				if (errNone != WinScreenMode(winScreenModeSetToDefaults, NULL, NULL, NULL, NULL))
+				{
+					SysFatalAlert("Failed to set screen mode");
+				}
 			}
 			
 			MemPtrFree(pd);
