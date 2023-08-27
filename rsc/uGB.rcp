@@ -73,7 +73,7 @@ ALERT ID 1003
 ERROR
 BEGIN
      TITLE "Device is incompatible"
-     MESSAGE "Your device does not meet the minimum requisites to run: It must have a 16bit depth screen (aka. color), have winMgrVer >= 4 and have an ARM processor."
+     MESSAGE "Your device does not meet the minimum requisites to run: It must have an ARM processor, and have winMgrVer >= 4."
      BUTTONS "OK" 
 END
 

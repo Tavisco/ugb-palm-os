@@ -227,9 +227,9 @@ UInt32 __attribute__((noinline)) PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 lau
 		if (error) 
 			return error;
 
-		// error = DeviceCompatible();
-		// if (error)
-		//  	return error;
+		error = DeviceCompatible();
+		if (error)
+		 	return error;
 
 		InitGlobals();
 		InitPreferences();

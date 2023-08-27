@@ -381,15 +381,46 @@ static void StartEmulation(void)
 
 				MemSet(pd->keyMapping, sizeof(pd->keyMapping), 0);
 
-				pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[2])] = KEY_BIT_RIGHT;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[3])] = KEY_BIT_DOWN;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[4])] = KEY_BIT_SEL;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
-				pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
-				
+				if (prefs->keys[0] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[0])] = KEY_BIT_LEFT;
+				}
+
+				if (prefs->keys[1] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[1])] = KEY_BIT_UP;
+				}
+
+				if (prefs->keys[2] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[2])] = KEY_BIT_RIGHT;
+				}
+
+				if (prefs->keys[3] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[3])] = KEY_BIT_DOWN;
+				}
+
+				if (prefs->keys[4] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[4])] = KEY_BIT_SEL;
+				}
+
+				if (prefs->keys[5] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[5])] = KEY_BIT_START;
+				}
+
+				if (prefs->keys[6] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[6])] = KEY_BIT_B;
+				}
+
+				if (prefs->keys[7] != 0)
+				{
+					pd->keyMapping[__builtin_ctzl(prefs->keys[7])] = KEY_BIT_A;
+				}
+
 				mask = KeySetMask(0);
 
 				// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
