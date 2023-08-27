@@ -106,18 +106,13 @@ static Boolean runRelocateableArmlet(const struct ArmletHeader *hdr, void *param
 	return true;
 }
 
-static void determineScreenModeForRom(struct PalmosData *pd, void *rom)
+static Boolean determineScreenModeForRom(struct PalmosData *pd, void *rom)
 {
 	UInt8 gbcFlag = *((UInt8*)rom + 0x143);
 	Err error = errNone;
-	UInt32 prevDepth, desiredDepth = BPP_16, depths;
+	UInt32 depths;
 	Boolean deviceSupportColors = false;
 	enum GameColorMode gameColorMode;
-
-	if (errNone != WinScreenMode(winScreenModeGet, NULL, NULL, &prevDepth, NULL))
-	{
-		SysFatalAlert("Failed to get screen mode");
-	}
 
 	if ((gbcFlag & 0x80) == 0)
 	{
@@ -147,25 +142,25 @@ static void determineScreenModeForRom(struct PalmosData *pd, void *rom)
 	{
 		pd->actAsOriginalGameboy = 0;
 		pd->outputColorMode = COLOR_MODE_RGB565;
-		return;
+		return true;
 	}
 
-	// if 4bpp and 2bpp both supported: for all games that do not REQUIRE color, run in 2bpp. all games that REQUIRE color, run in 4bpp and downmix
+	// if 4bpp and 2bpp both supported: for all games that do NOT REQUIRE color, run in 2bpp. all games that REQUIRE color, run in 4bpp and downmix
 	if ((depths & (1UL << (BPP_4 - 1))) && (depths & (1UL << (BPP_2 - 1))))
 	{
-		if (gameColorMode == NON_COLOR_GAME)
-		{
-			// set to 2bpp
-			pd->actAsOriginalGameboy = 1;
-			pd->outputColorMode = COLOR_MODE_2BPP_DIRECT;
-			return;
-		}
-		else
+		if (gameColorMode == COLOR_GAME_REQUIRE_COLOR)
 		{
 			// set to 4 bpp
 			pd->actAsOriginalGameboy = 0;
 			pd->outputColorMode = COLOR_MODE_4BPP_MIXED;
-			return;
+			return true;
+		}
+		else
+		{
+			// set to 2bpp
+			pd->actAsOriginalGameboy = 1;
+			pd->outputColorMode = COLOR_MODE_2BPP_DIRECT;
+			return true;
 		}
 	}
 
@@ -175,33 +170,32 @@ static void determineScreenModeForRom(struct PalmosData *pd, void *rom)
 		// set to 4 bpp
 		pd->actAsOriginalGameboy = 0;
 		pd->outputColorMode = COLOR_MODE_4BPP_MIXED;
-		return;
+		return true;
 	}
 
 	// if 2bpp is supported but 4bpp is not: run in 2bpp mode. refuse to run color-requiring games (tell user that 4bpp is required)
 	if (depths & (1UL << (BPP_2 - 1)) && !(depths & (1UL << (BPP_4 - 1))))
 	{
-		if (gameColorMode == NON_COLOR_GAME)
+		if (gameColorMode == COLOR_GAME_REQUIRE_COLOR)
+		{
+			// refuse to run color-requiring games
+			FrmAlert(ColorGameRequireColorAlert);
+			FrmGotoForm(RomSelectorForm);
+			return false;
+		}
+		else
 		{
 			// set to 2bpp
 			pd->actAsOriginalGameboy = 1;
 			pd->outputColorMode = COLOR_MODE_2BPP_DIRECT;
-			return;
-		}
-		else
-		{
-			// refuse to run color-requiring games
-			FrmAlert(ColorGameRequireColorAlert);
-			// return to rom selector
-			FrmGotoForm(RomSelectorForm);
-			return;
+			return false;
 		}
 	}
 
 	// if only 1bpp is supported - refuse to run anything, tell user that 2bpp is minimum
 	FrmAlert(OneBppOnlyAlert);
 	FrmGotoForm(RomSelectorForm);
-	return;
+	return false;
 }
 
 static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
@@ -232,9 +226,8 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 		e = VFSFileOpen(vrn, romFileFullPath, vfsModeRead, &fGame);
 		if (e == errNone) {
 			if (errNone == VFSFileSize(fGame, &fSize)) {
-				
 				void *rom, *ram;
-				
+
 				e = FtrPtrNew(APP_CREATOR, FTR_ROM_MEMORY, fSize, &rom);
 				if (e != errNone)
 					SysFatalAlert("Failed to allocate memory for rom. Try to free some internal memory and restart the emulator.");
@@ -265,7 +258,8 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 						break;
 					}
 				}
-				determineScreenModeForRom(pd, rom);
+				if (!determineScreenModeForRom(pd, rom))
+					return false;
 				pd->rom = swapPtr(rom);
 				pd->romSz = swap32(fSize);
 				pd->ramBuffer = swapPtr(ram = MemChunkNew(0, RAM_SIZE, 0x1200));
@@ -286,16 +280,18 @@ static Boolean loadROMIntoMemory(struct PalmosData *pd, UInt16 *cardVrnP)
 				
 				if (cardVrnP)
 					*cardVrnP = vrn;
-				
-				ret = true;
+
+				VFSFileClose(fGame);
+				return true;
 			} else {
 				SysFatalAlert("VFSFileSize failed");
 			}
-			VFSFileClose(fGame);
+		} else if (e != vfsErrFileNotFound) {
+			SysFatalAlert("VFSFileOpen failed");
 		}
 	}
-	
-	return ret;
+	SysFatalAlert("Failed to open ROM file");
+	return false;
 }
 
 static void setScreenModeForRom(uint8_t outputColorMode)
@@ -312,7 +308,6 @@ static void setScreenModeForRom(uint8_t outputColorMode)
 	case COLOR_MODE_2BPP_DIRECT:
 		desiredDepth = BPP_2;
 		break;
-	
 	default:
 		SysFatalAlert("Unknown color mode");
 		break;
@@ -357,9 +352,8 @@ static void StartEmulation(void)
 		
 		pd = MemPtrNew(sizeof(struct PalmosData));
 		if (pd) {
-			if (!loadROMIntoMemory(pd, &vrn))
-				SysFatalAlert("Cannot load selected game into memory!");
-			else {
+			if (loadROMIntoMemory(pd, &vrn))
+			{
 				latestPrefSize = sizeof(struct UgbPrefs);
 
 				prefs = MemPtrNew(latestPrefSize);
@@ -413,22 +407,17 @@ static void StartEmulation(void)
 					FrmAlert(FailedToSaveAlert);
 				
 				MemChunkFree(swapPtr(pd->ramBuffer));
-				FtrPtrFree(APP_CREATOR, FTR_ROM_MEMORY);
 				MemPtrFree(prefs);
 				if (errNone != WinScreenMode(winScreenModeSetToDefaults, NULL, NULL, NULL, NULL))
 				{
 					SysFatalAlert("Failed to set screen mode");
 				}
 			}
-			
 			MemPtrFree(pd);
 		}
 	} else {
 		FrmAlert(ResolutionTooLowAlert);
 	}
-
-	// (void)WinScreenMode(winScreenModeSet, NULL, NULL, &prevDepth, NULL);
-	//InitForm();
 }
 
 Boolean PlayerDoCommand(UInt16 command)
@@ -467,7 +456,11 @@ Boolean PlayerFormHandleEvent(EventType *eventP)
 
 		case ctlSelectEvent:
 			return PlayerDoCommand(eventP->data.ctlSelect.controlID);
-		
+
+		case frmCloseEvent:
+			FtrPtrFree(APP_CREATOR, FTR_ROM_MEMORY);
+			break;
+
 		default:
 				break;
 	}

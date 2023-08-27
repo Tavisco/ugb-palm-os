@@ -112,7 +112,7 @@ END
 ALERT ID 1008
 ERROR
 BEGIN
-    TITLE "1BPP screens are not supported!"
+    TITLE "Unsupported device"
     MESSAGE "uGB does not support 1BPP screens"
     BUTTONS "OK" 
 END
