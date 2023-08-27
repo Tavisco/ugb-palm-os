@@ -20,7 +20,6 @@ You can find the binaries (the .prc file) in the release section of Github. [Or 
 
 ## Device minimum requirements
 - Palm OS 5.0 or greater
-- A color screen
 - An SD Card slot
 - Physical buttons working (as of now. And you probably want a device with 5-way navigator, and four hard-buttons)
 
