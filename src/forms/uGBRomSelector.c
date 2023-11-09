@@ -36,8 +36,8 @@ static void LoadPlayer(void)
 	PrefGetAppPreferences(APP_CREATOR, PREFERENCES_ID, prefs, &latestPrefSize, true);
 
 	if (!prefs->keyBinded){
-		FrmAlert(NoKeyBindingAlert);
-		return;
+		if (FrmAlert(NoKeyBindingAlert) != 0)
+			return;
 	}
 
 	MemSet(romFileName, MAX_FILENAME_LENGTH, 0);

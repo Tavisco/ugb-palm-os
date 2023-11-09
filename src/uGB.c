@@ -110,7 +110,7 @@ static Err DeviceCompatible(void) {
 
 	if (
 		errNone == FtrGet(sysFileCSystem, sysFtrNumProcessorID, &processorType) && 
-		sysFtrNumProcessorIsARM(processorType) &&
+		//sysFtrNumProcessorIsARM(processorType) &&
 		errNone == FtrGet(sysFtrCreator, sysFtrNumWinVersion, &winMgrVer) &&
 		winMgrVer >= 4 &&
 		errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&

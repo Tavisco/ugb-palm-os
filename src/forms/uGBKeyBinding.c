@@ -16,6 +16,7 @@ static void ListenForKey(Int16 selection)
 	UInt32 noKey, newKey, mask;
 	UInt16 currentPrefSize, latestPrefSize;
 	Int16 prefsVersion = noPreferenceFound;
+	EventType event;
 	struct UgbPrefs *prefs;
 
 	if (selection < 0 || selection > 7)
@@ -47,10 +48,19 @@ static void ListenForKey(Int16 selection)
 
 	mask = KeySetMask(0);
 
-	SetStatusLabel("Press button NOW");
+	SetStatusLabel("Hold button NOW\ror press 'find'\rto abort.");
 	while (noKey == newKey)
 	{
 		newKey = KeyCurrentState();
+		EvtGetEvent(&event, 15);
+		SysHandleEvent(&event);
+		if (event.eType == keyDownEvent && event.data.keyDown.chr == findChr )
+		{
+			SetStatusLabel("Aborted!");
+			KeySetMask(mask);
+			MemPtrFree(prefs);
+			return;
+		}
 	}
 
 	prefs->keys[selection] = newKey;
@@ -59,7 +69,7 @@ static void ListenForKey(Int16 selection)
 	PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true); 
 
 	SetStatusLabel("Saved!\rReady to bind next\rcontrol.");
-	KeySetMask(mask);
+	//KeySetMask(mask);
 	MemPtrFree(prefs);
 }
 
