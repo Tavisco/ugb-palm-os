@@ -29,6 +29,7 @@
 #define KeyBindingList						5001
 #define KeyBindingOkBtn						5002
 #define KeyBindingStatusLbl					5005
+#define KeyBindingAbortBtn					5003
 
 #define FrameSkippingForm					6000
 #define FrameSkippingOkBtn					6001

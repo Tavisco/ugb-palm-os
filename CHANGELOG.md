@@ -1,5 +1,11 @@
 # Changelog
 
+## V1.4 - 2023/11/12
+
+### Added
+- Button to stop key binding after initiating a bind
+- Option to start the emulation even without key bindings
+
 ## V1.3 - 2023/08/27
 
 ### Added

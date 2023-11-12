@@ -14,9 +14,10 @@ static void SetStatusLabel(Char *status)
 static void ListenForKey(Int16 selection)
 {
 	UInt32 noKey, newKey, mask;
-	UInt16 currentPrefSize, latestPrefSize;
+	UInt16 currentPrefSize, latestPrefSize, abortBtnIndex, okBtnIndex;
 	Int16 prefsVersion = noPreferenceFound;
 	EventType event;
+	FormType *frm;
 	struct UgbPrefs *prefs;
 
 	if (selection < 0 || selection > 7)
@@ -48,17 +49,25 @@ static void ListenForKey(Int16 selection)
 
 	mask = KeySetMask(0);
 
-	SetStatusLabel("Hold button NOW\ror press 'find'\rto abort.");
+	SetStatusLabel("Hold button NOW\ror press abort.");
+	frm = FrmGetActiveForm();
+	abortBtnIndex = FrmGetObjectIndex(frm, KeyBindingAbortBtn);
+	okBtnIndex = FrmGetObjectIndex(frm, KeyBindingOkBtn);
+	FrmShowObject(frm,  abortBtnIndex);
+	FrmHideObject(frm, okBtnIndex);
 	while (noKey == newKey)
 	{
 		newKey = KeyCurrentState();
-		EvtGetEvent(&event, 15);
-		SysHandleEvent(&event);
-		if (event.eType == keyDownEvent && event.data.keyDown.chr == findChr )
+		EvtGetEvent(&event, 30);
+		FrmHandleEvent(frm, &event);
+
+		if (event.eType == lstSelectEvent || (event.eType == ctlSelectEvent && event.data.ctlSelect.controlID == KeyBindingAbortBtn))
 		{
-			SetStatusLabel("Aborted!");
+			SetStatusLabel("Aborted!\rReady to bind next\rcontrol.");
 			KeySetMask(mask);
 			MemPtrFree(prefs);
+			FrmHideObject(frm, abortBtnIndex);
+			FrmShowObject(frm,  okBtnIndex);
 			return;
 		}
 	}
@@ -69,8 +78,10 @@ static void ListenForKey(Int16 selection)
 	PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true); 
 
 	SetStatusLabel("Saved!\rReady to bind next\rcontrol.");
-	//KeySetMask(mask);
+	KeySetMask(mask);
 	MemPtrFree(prefs);
+	FrmHideObject(frm, abortBtnIndex);
+	FrmShowObject(frm,  okBtnIndex);
 }
 
 static void UnselectList(void)

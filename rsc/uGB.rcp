@@ -173,6 +173,7 @@ BEGIN
 	LABEL "Select a control from\rthe list to start bind" ID 5005  AT (4 PrevBottom)
 
 	BUTTON "OK" ID 5002 AT (5 95 AUTO AUTO)
+	BUTTON "Abort" ID 5003 AT (36 95 AUTO AUTO) NONUSABLE
 END
 
 FORM ID 6000  AT ( 2 47 156 111 )
