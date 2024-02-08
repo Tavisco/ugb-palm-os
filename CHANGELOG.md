@@ -1,5 +1,10 @@
 # Changelog
 
+## V1.5 - 2024/02/07
+
+### Fixed
+- Updated uGB core, which fixes a bug which manifested on a Pokemon rom hack.
+
 ## V1.4 - 2023/11/12
 
 ### Added

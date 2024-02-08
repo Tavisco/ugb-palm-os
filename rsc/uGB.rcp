@@ -30,7 +30,7 @@ HEX "code" ID 0
 	/* bytes below a5 */
 	0x00 0x00 0x00 0x00
 
-VERSION ID 1 "1.4"
+VERSION ID 1 "1.5"
 
 ICONFAMILYEX ID 1000
 BEGIN
