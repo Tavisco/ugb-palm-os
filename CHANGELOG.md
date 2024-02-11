@@ -1,5 +1,11 @@
 # Changelog
 
+### Added
+- Toggleable FPS Counter
+
+### Fixed
+- Sometimes the STOP button dissapeared from the screen
+
 ## V1.5 - 2024/02/07
 
 ### Fixed
