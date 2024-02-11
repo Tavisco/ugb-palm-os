@@ -319,22 +319,47 @@ static void setScreenModeForRom(uint8_t outputColorMode)
 	}
 }
 
+static void CalcAverageTick(struct RuntimeVars *runtimeVars)
+{
+    UInt32 newtick = TimGetTicks();
+    UInt32 oldestTick = runtimeVars->ticklist[runtimeVars->tickindex];  // Get the oldest tick
+
+    // Update ticksum by subtracting the oldest tick and adding the new tick
+    runtimeVars->ticksum = runtimeVars->ticksum - oldestTick + newtick;
+    runtimeVars->ticklist[runtimeVars->tickindex] = newtick; // Update ticklist with new tick
+
+    if (++runtimeVars->tickindex == FPS_CALC_MAX_SAMPLES) // Increment tickindex and check for overflow
+        runtimeVars->tickindex = 0;
+
+    UInt32 fps = (FPS_CALC_MAX_SAMPLES * 1000) / (newtick - oldestTick); // Calculate FPS
+
+    Char fpsStr[8]; // Buffer to hold the FPS string
+    StrPrintF(fpsStr, "%ld", fps); // Convert FPS to string
+
+    WinDrawChars(fpsStr, 2, 52, 147); // Draw FPS on the screen
+}
+
 // This is used to pass on-screen buttons to the emulator core
 UInt32 getExtraKeysCallback (void)
 {
-    return (UInt32)globalsSlotVal(GLOBALS_SLOT_EXTRA_KEY_VALUE);
+	return (UInt32)globalsSlotVal(GLOBALS_SLOT_EXTRA_KEY_VALUE);
 }
 
 void perFrameCallback (void)
 {
+	struct RuntimeVars *runtimeVars;
 	EventType event;
+
+	runtimeVars = globalsSlotVal(GLOBALS_SLOT_FORM_DRAWN);
+
+	CalcAverageTick(runtimeVars);
 
 	EvtGetEvent(&event, 0);
 	FrmDispatchEvent(&event);
 
-	if (!globalsSlotVal(GLOBALS_SLOT_FORM_DRAWN)) {
+	if (!runtimeVars->formDrawn) {
 		FrmDrawForm(FrmGetActiveForm());
-		*globalsSlotPtr(GLOBALS_SLOT_FORM_DRAWN) = (void *)1;
+		runtimeVars->formDrawn = 1;
 	}
 }
 
@@ -347,6 +372,7 @@ static void StartEmulation(void)
 	UInt16 vrn, latestPrefSize;
 	UInt32 mask;
 	struct UgbPrefs *prefs;
+	struct RuntimeVars *runtimeVars; 
 	static int keyBits[] = {KEY_BIT_LEFT, KEY_BIT_UP, KEY_BIT_RIGHT, KEY_BIT_DOWN, KEY_BIT_SEL, KEY_BIT_START, KEY_BIT_B, KEY_BIT_A};
 
 	if (errNone == WinScreenGetAttribute(winScreenWidth, &screenPixelW) &&
@@ -398,8 +424,20 @@ static void StartEmulation(void)
 
 				// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
 				*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = 0;
-				// Mark the form as not drawn
-				*globalsSlotPtr(GLOBALS_SLOT_FORM_DRAWN) = 0;
+
+				// Initialize the runtimeVars
+				runtimeVars = MemPtrNew(sizeof(struct RuntimeVars));
+				MemSet(runtimeVars, sizeof(struct RuntimeVars), 0);
+
+				runtimeVars->formDrawn = false;
+				runtimeVars->tickindex = 0;
+				runtimeVars->ticksum = 0;
+				for (UInt8 i = 0; i < FPS_CALC_MAX_SAMPLES; i++)
+				{
+					runtimeVars->ticklist[i] = 0;
+				}
+
+				*globalsSlotPtr(GLOBALS_SLOT_FORM_DRAWN) = runtimeVars;
 
 				if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
 					SysFatalAlert("Failed to load and relocate the ARM code");

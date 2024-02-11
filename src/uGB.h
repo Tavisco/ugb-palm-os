@@ -15,6 +15,7 @@
 #define MAX_ROM_FULL_PATH_LEN			BASEPATH_LENGTH+MAX_FILENAME_LENGTH
 #define MAX_SAVE_FULL_PATH_LEN			MAX_ROM_FULL_PATH_LEN+SAVE_DIR_NAME_LENGTH+SAVE_EXTE_NAME_LENGTH
 #define DEFAULT_FRAME_SKIPPING_VALUE	2
+#define FPS_CALC_MAX_SAMPLES			30
 
 #define APP_CREATOR					'UGB_'
 #define UGB_BASE_PATH				"/Palm/Programs/uGB/"
@@ -65,6 +66,13 @@ struct UgbPrefs {
 	Boolean	keyBinded;
 	UInt32	keys[8];
 	UInt8	frameSkipping;
+};
+
+struct RuntimeVars {
+	Boolean formDrawn;
+	UInt32 tickindex;
+	UInt32 ticksum;
+	UInt32 ticklist[FPS_CALC_MAX_SAMPLES];
 };
 
 // uGB.c
