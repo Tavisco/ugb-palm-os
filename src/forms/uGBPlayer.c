@@ -321,22 +321,25 @@ static void setScreenModeForRom(uint8_t outputColorMode)
 
 static void CalcAverageTick(struct RuntimeVars *runtimeVars)
 {
-    UInt32 newtick = TimGetTicks();
-    UInt32 oldestTick = runtimeVars->ticklist[runtimeVars->tickindex];  // Get the oldest tick
+	UInt32 newtick = TimGetTicks();
+	UInt32 oldestTick = runtimeVars->ticklist[runtimeVars->tickindex];  
 
-    // Update ticksum by subtracting the oldest tick and adding the new tick
-    runtimeVars->ticksum = runtimeVars->ticksum - oldestTick + newtick;
-    runtimeVars->ticklist[runtimeVars->tickindex] = newtick; // Update ticklist with new tick
+	runtimeVars->ticksum = runtimeVars->ticksum - oldestTick + newtick;
+	runtimeVars->ticklist[runtimeVars->tickindex] = newtick; 
 
-    if (++runtimeVars->tickindex == FPS_CALC_MAX_SAMPLES) // Increment tickindex and check for overflow
-        runtimeVars->tickindex = 0;
+	if (++runtimeVars->tickindex == FPS_CALC_MAX_SAMPLES)
+		runtimeVars->tickindex = 0;
 
-    UInt32 fps = (FPS_CALC_MAX_SAMPLES * 1000) / (newtick - oldestTick); // Calculate FPS
+	UInt32 fps = (FPS_CALC_MAX_SAMPLES * 100) / (newtick - oldestTick) * (runtimeVars->frameSkipping + 1);
 
-    Char fpsStr[8]; // Buffer to hold the FPS string
-    StrPrintF(fpsStr, "%ld", fps); // Convert FPS to string
+	Char *fpsStr;
+	fpsStr = (Char *)MemPtrNew(maxStrIToALen);
+	MemSet(fpsStr, maxStrIToALen, 0);
 
-    WinDrawChars(fpsStr, 2, 52, 147); // Draw FPS on the screen
+	StrIToA(fpsStr, fps);
+	Int16 fpsStrSize = (fps > 99) ? 3 : ((fps > 9) ? 2 : 1);
+
+	WinDrawChars(fpsStr, fpsStrSize, 52, 147); 
 }
 
 // This is used to pass on-screen buttons to the emulator core
@@ -350,7 +353,7 @@ void perFrameCallback (void)
 	struct RuntimeVars *runtimeVars;
 	EventType event;
 
-	runtimeVars = globalsSlotVal(GLOBALS_SLOT_FORM_DRAWN);
+	runtimeVars = globalsSlotVal(GLOBALS_SLOT_RUNTIME_VARS);
 
 	CalcAverageTick(runtimeVars);
 
@@ -436,8 +439,9 @@ static void StartEmulation(void)
 				{
 					runtimeVars->ticklist[i] = 0;
 				}
+				runtimeVars->frameSkipping = prefs->frameSkipping;
 
-				*globalsSlotPtr(GLOBALS_SLOT_FORM_DRAWN) = runtimeVars;
+				*globalsSlotPtr(GLOBALS_SLOT_RUNTIME_VARS) = runtimeVars;
 
 				if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
 					SysFatalAlert("Failed to load and relocate the ARM code");
@@ -447,7 +451,7 @@ static void StartEmulation(void)
 				MemHandleUnlock(mh);
 				DmReleaseResource(mh);
 			
-				WinDrawChars("Writing save file...", 20, 0, 0);
+				WinDrawChars("Writing save file...", 20, 36, 147);
 
 				if (pd->ramSize && !gameSave(pd, vrn))
 					FrmAlert(FailedToSaveAlert);

@@ -59,7 +59,7 @@
 	#define GLOBALS_SLOT_ROMS_LIST			1
 	#define GLOBALS_SLOT_ROM_FILE_NAME		2
 	#define GLOBALS_SLOT_EXTRA_KEY_VALUE	3
-	#define GLOBALS_SLOT_FORM_DRAWN			4
+	#define GLOBALS_SLOT_RUNTIME_VARS		4
 #endif
 
 struct UgbPrefs {
@@ -69,10 +69,11 @@ struct UgbPrefs {
 };
 
 struct RuntimeVars {
-	Boolean formDrawn;
-	UInt32 tickindex;
-	UInt32 ticksum;
-	UInt32 ticklist[FPS_CALC_MAX_SAMPLES];
+	Boolean	formDrawn;
+	UInt32	tickindex;
+	UInt32	ticksum;
+	UInt32	ticklist[FPS_CALC_MAX_SAMPLES];
+	UInt8	frameSkipping;
 };
 
 // uGB.c
