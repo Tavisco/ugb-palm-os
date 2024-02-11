@@ -58,6 +58,7 @@
 	#define GLOBALS_SLOT_ROMS_LIST			1
 	#define GLOBALS_SLOT_ROM_FILE_NAME		2
 	#define GLOBALS_SLOT_EXTRA_KEY_VALUE	3
+	#define GLOBALS_SLOT_FORM_DRAWN			4
 #endif
 
 struct UgbPrefs {

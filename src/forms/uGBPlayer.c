@@ -319,6 +319,7 @@ static void setScreenModeForRom(uint8_t outputColorMode)
 	}
 }
 
+// This is used to pass on-screen buttons to the emulator core
 UInt32 getExtraKeysCallback (void)
 {
     return (UInt32)globalsSlotVal(GLOBALS_SLOT_EXTRA_KEY_VALUE);
@@ -330,6 +331,11 @@ void perFrameCallback (void)
 
 	EvtGetEvent(&event, 0);
 	FrmDispatchEvent(&event);
+
+	if (!globalsSlotVal(GLOBALS_SLOT_FORM_DRAWN)) {
+		FrmDrawForm(FrmGetActiveForm());
+		*globalsSlotPtr(GLOBALS_SLOT_FORM_DRAWN) = (void *)1;
+	}
 }
 
 static void StartEmulation(void)
@@ -392,6 +398,8 @@ static void StartEmulation(void)
 
 				// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
 				*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = 0;
+				// Mark the form as not drawn
+				*globalsSlotPtr(GLOBALS_SLOT_FORM_DRAWN) = 0;
 
 				if (!runRelocateableArmlet(MemHandleLock(mh = DmGet1Resource('ARMC', 0)), pd, NULL))
 					SysFatalAlert("Failed to load and relocate the ARM code");
@@ -401,6 +409,8 @@ static void StartEmulation(void)
 				MemHandleUnlock(mh);
 				DmReleaseResource(mh);
 			
+				WinDrawChars("Writing save file...", 20, 0, 0);
+
 				if (pd->ramSize && !gameSave(pd, vrn))
 					FrmAlert(FailedToSaveAlert);
 				
@@ -447,7 +457,7 @@ Boolean PlayerFormHandleEvent(EventType *eventP)
 	switch (eventP->eType)
 	{
 		case frmOpenEvent:
-			FrmDrawForm(fp);
+			WinDrawChars("Loading ROM...", 14, 0, 0);
 			StartEmulation();
 			handled = true;
 			break;
