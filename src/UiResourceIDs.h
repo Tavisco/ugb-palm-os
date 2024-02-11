@@ -15,6 +15,7 @@
 #define RomSelectorMenuItemKeys				1000
 #define RomSelectorMenuItemFramsSkipping	1001
 #define RomSelectorMenuItemAbout			1002
+#define RomSelectorMenuItemDisplayOptions	1003
 
 #define RomSelectorForm						2000
 #define RomSelectorList						2020
@@ -24,6 +25,7 @@
 
 #define PlayerForm							4000
 #define PlayerFormStopButton				4000
+#define PlayerFormFpsLabel					4001
 
 #define KeyBindingForm						5000
 #define KeyBindingList						5001
@@ -35,5 +37,9 @@
 #define FrameSkippingOkBtn					6001
 #define FrameSkippingSlider					6002
 #define FrameSkippingCurrValueLbl			6007
+
+#define DisplayOptionsForm					6100
+#define DisplayOptionsOkBtn					6101
+#define DisplayOptionsShowFpsCheckbox		6102
 
 #endif

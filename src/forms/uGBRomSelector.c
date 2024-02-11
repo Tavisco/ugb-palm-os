@@ -152,6 +152,13 @@ Boolean RomSelectorDoCommand(UInt16 command)
 			break;
 		}
 
+	case RomSelectorMenuItemDisplayOptions:
+	{
+		FrmPopupForm(DisplayOptionsForm);
+		handled = true;
+		break;
+	}
+
 	default:
 		break;
 	}

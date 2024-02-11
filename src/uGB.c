@@ -52,6 +52,10 @@ static Boolean AppHandleEvent(EventType * eventP)
 			case FrameSkippingForm:
 				FrmSetEventHandler(frmP, FrameSkippingHandleEvent);
 				break;
+
+			case DisplayOptionsForm:
+				FrmSetEventHandler(frmP, DisplayOptionsHandleEvent);
+				break;
 		}
 		return true;
 	}
@@ -204,9 +208,10 @@ static void InitPreferences(void)
 		if (prefsVersion != PREFERENCES_LAST_VER)
 		{
 			// App updated
-			if (prefsVersion >= 0 && prefsVersion <= 1)
+			if (prefsVersion < 2)
 			{
 				prefs->frameSkipping = DEFAULT_FRAME_SKIPPING_VALUE;
+				prefs->showFPS = false;
 			}
 
 			PrefSetAppPreferences(APP_CREATOR, PREFERENCES_ID, PREFERENCES_LAST_VER, prefs, latestPrefSize, true);

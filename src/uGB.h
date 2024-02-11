@@ -23,7 +23,7 @@
 #define UGB_SAVE_EXTENSION			".sav"
 #define FTR_ROM_MEMORY				(UInt16)0
 #define PREFERENCES_ID				0
-#define PREFERENCES_LAST_VER		1
+#define PREFERENCES_LAST_VER		2
 
 #define RAM_SIZE		(128UL << 10)
 
@@ -66,6 +66,7 @@ struct UgbPrefs {
 	Boolean	keyBinded;
 	UInt32	keys[8];
 	UInt8	frameSkipping;
+	Boolean showFPS;
 };
 
 struct RuntimeVars {
@@ -74,6 +75,7 @@ struct RuntimeVars {
 	UInt32	ticksum;
 	UInt32	ticklist[FPS_CALC_MAX_SAMPLES];
 	UInt8	frameSkipping;
+	Boolean showFPS;
 };
 
 // uGB.c
@@ -98,5 +100,8 @@ Boolean KeyBindingHandleEvent(EventType *eventP);
 Boolean FrameSkippingDoCommand(UInt16 command);
 Boolean FrameSkippingHandleEvent(EventType *eventP);
 
+// uGBDisplayOptions.c
+Boolean DisplayOptionsDoCommand(UInt16 command);
+Boolean DisplayOptionsHandleEvent(EventType *eventP);
 
 #endif /* UGB_H */

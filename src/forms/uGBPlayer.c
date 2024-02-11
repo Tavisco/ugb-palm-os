@@ -355,25 +355,32 @@ void perFrameCallback (void)
 
 	runtimeVars = globalsSlotVal(GLOBALS_SLOT_RUNTIME_VARS);
 
-	CalcAverageTick(runtimeVars);
+	if (runtimeVars->showFPS)
+		CalcAverageTick(runtimeVars);
 
 	EvtGetEvent(&event, 0);
 	FrmDispatchEvent(&event);
 
 	if (!runtimeVars->formDrawn) {
-		FrmDrawForm(FrmGetActiveForm());
+		FormPtr fp = FrmGetActiveForm();
+		
+		FrmDrawForm(fp);
 		runtimeVars->formDrawn = 1;
+
+		if (!runtimeVars->showFPS)
+			FrmHideObject(fp,  FrmGetObjectIndex(fp, PlayerFormFpsLabel));
 	}
 }
 
 static void StartEmulation(void)
 {
 	UInt32 screenPixelW, screenPixelH, screenStride;
-	struct PalmosData *pd;
 	UInt8 mult = 0;
 	MemHandle mh;
-	UInt16 vrn, latestPrefSize;
-	UInt32 mask;
+	UInt16 vrn, latestPrefSize, initDelay, old_initDelay, old_initDblDelay, period, old_period;
+	UInt32 mask, old_mask;
+	Boolean queueAhead,old_queueAhead;
+	struct PalmosData *pd;
 	struct UgbPrefs *prefs;
 	struct RuntimeVars *runtimeVars; 
 	static int keyBits[] = {KEY_BIT_LEFT, KEY_BIT_UP, KEY_BIT_RIGHT, KEY_BIT_DOWN, KEY_BIT_SEL, KEY_BIT_START, KEY_BIT_B, KEY_BIT_A};
@@ -425,6 +432,13 @@ static void StartEmulation(void)
 
 				mask = KeySetMask(0);
 
+				initDelay = slowestKeyDelayRate;
+				period = slowestKeyPeriodRate;
+				queueAhead = false;
+
+				KeyRates(false, &old_initDelay ,&old_period, &old_initDblDelay, &old_queueAhead);
+				KeyRates(true, &initDelay, &period, &initDelay, &queueAhead);
+
 				// Set the value of the GLOBALS_SLOT_EXTRA_KEY_VALUE slot to the address of the allocated memory
 				*globalsSlotPtr(GLOBALS_SLOT_EXTRA_KEY_VALUE) = 0;
 
@@ -440,6 +454,7 @@ static void StartEmulation(void)
 					runtimeVars->ticklist[i] = 0;
 				}
 				runtimeVars->frameSkipping = prefs->frameSkipping;
+				runtimeVars->showFPS = prefs->showFPS;
 
 				*globalsSlotPtr(GLOBALS_SLOT_RUNTIME_VARS) = runtimeVars;
 
@@ -447,6 +462,7 @@ static void StartEmulation(void)
 					SysFatalAlert("Failed to load and relocate the ARM code");
 					
 				KeySetMask(mask);
+				KeyRates(true,&old_initDelay,&old_period,&old_initDblDelay,&old_queueAhead);
 				
 				MemHandleUnlock(mh);
 				DmReleaseResource(mh);
